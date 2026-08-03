@@ -33,11 +33,27 @@ const bgOverlay = document.getElementById('bgOverlay');
 // Initialize
 function init() {
     checkTVMode();
+    loadSettings();
     loadProjects();
     renderProjects();
     initCanvas();
     initMediaBackgrounds();
     setupEventListeners();
+}
+
+// Settings Management
+function loadSettings() {
+    const savedBlur = localStorage.getItem('kairos_bgBlur');
+    if (savedBlur !== null) {
+        blurSlider.value = savedBlur;
+        bgOverlay.style.backdropFilter = `blur(${savedBlur}px)`;
+    }
+
+    const savedOpacity = localStorage.getItem('kairos_bgOpacity');
+    if (savedOpacity !== null) {
+        opacitySlider.value = savedOpacity;
+        bgOverlay.style.backgroundColor = `rgba(0, 0, 0, ${savedOpacity})`;
+    }
 }
 
 // Data Management
@@ -177,10 +193,12 @@ function setupEventListeners() {
     // Background Controls
     blurSlider.addEventListener('input', (e) => {
         bgOverlay.style.backdropFilter = `blur(${e.target.value}px)`;
+        localStorage.setItem('kairos_bgBlur', e.target.value);
     });
 
     opacitySlider.addEventListener('input', (e) => {
         bgOverlay.style.backgroundColor = `rgba(0, 0, 0, ${e.target.value})`;
+        localStorage.setItem('kairos_bgOpacity', e.target.value);
     });
 
     // Backup & Restore
