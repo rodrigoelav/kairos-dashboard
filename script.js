@@ -36,6 +36,7 @@ function init() {
     loadProjects();
     renderProjects();
     initCanvas();
+    initMediaBackgrounds();
     setupEventListeners();
 }
 
@@ -175,11 +176,11 @@ function setupEventListeners() {
 
     // Background Controls
     blurSlider.addEventListener('input', (e) => {
-        bgOverlay.style.backdropFilter = \`blur(\${e.target.value}px)\`;
+        bgOverlay.style.backdropFilter = `blur(${e.target.value}px)`;
     });
 
     opacitySlider.addEventListener('input', (e) => {
-        bgOverlay.style.backgroundColor = \`rgba(0, 0, 0, \${e.target.value})\`;
+        bgOverlay.style.backgroundColor = `rgba(0, 0, 0, ${e.target.value})`;
     });
 
     // Backup & Restore
@@ -219,6 +220,24 @@ function setupEventListeners() {
         e.preventDefault();
         window.location.href = window.location.pathname + '?mode=tv';
     });
+    
+    // Settings Dropdown Toggle
+    const btnSettings = document.querySelector('.dropdown .btn-secondary');
+    const dropdownContent = document.querySelector('.dropdown-content');
+    
+    btnSettings.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropdownContent.classList.toggle('show');
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', () => {
+        dropdownContent.classList.remove('show');
+    });
+    
+    dropdownContent.addEventListener('click', (e) => {
+        e.stopPropagation(); // keep open if clicking inside, or close if hitting a button
+    });
 }
 
 // TV Mode Logic
@@ -226,6 +245,13 @@ function checkTVMode() {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('mode') === 'tv') {
         document.body.classList.add('tv-mode');
+        
+        // Sair do modo TV com a tecla ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                window.location.href = window.location.pathname;
+            }
+        });
     }
 }
 
@@ -252,7 +278,7 @@ function initCanvas() {
             this.size = Math.random() * 2 + 0.5;
             this.speedX = Math.random() * 1 - 0.5;
             this.speedY = Math.random() * 1 - 0.5;
-            this.color = \`rgba(255, 42, 42, \${Math.random() * 0.5})\`;
+            this.color = `rgba(255, 42, 42, ${Math.random() * 0.5})`;
         }
         update() {
             this.x += this.speedX;
@@ -329,6 +355,75 @@ function initCanvas() {
     }
     
     animate();
+}
+
+// Media Background Manager (Loop 10 mins)
+function initMediaBackgrounds() {
+    const mediaContainer = document.getElementById('mediaBgContainer');
+    // Para funcionar localmente, nomeie os arquivos nesta ordem na pasta 'backgrounds'.
+    // Suporta vídeos e imagens.
+    const backgrounds = [
+        'Blueprints_and_schematics_rotate_202608031525.mp4',
+        'ChatGPT Image 3 de ago. de 2026, 15_18_40.png',
+        'ChatGPT Image 3 de ago. de 2026, 15_25_20.png',
+        'bg1.mp4', 'bg1.webm', 'bg1.jpg', 'bg1.png',
+        'bg2.mp4', 'bg2.webm', 'bg2.jpg', 'bg2.png',
+        'bg3.mp4', 'bg3.webm', 'bg3.jpg', 'bg3.png'
+    ];
+    
+    let currentIndex = 0;
+    const mediaElements = [];
+
+    // Tentamos carregar os arquivos. Como é local, alguns falharão silenciosamente se não existirem, 
+    // mas os que existirem ficarão prontos.
+    backgrounds.forEach((file, index) => {
+        let el;
+        if (file.endsWith('.mp4') || file.endsWith('.webm')) {
+            el = document.createElement('video');
+            el.src = `backgrounds/${file}`;
+            el.loop = true;
+            el.muted = true;
+            el.autoplay = true;
+            el.playsInline = true;
+        } else {
+            el = document.createElement('img');
+            el.src = `backgrounds/${file}`;
+        }
+        
+        el.onerror = () => { el.remove(); }; // Remove do DOM se não existir
+        el.onload = () => { mediaElements.push(el); };
+        if (el.tagName === 'VIDEO') {
+            el.onloadeddata = () => { mediaElements.push(el); };
+        }
+        
+        mediaContainer.appendChild(el);
+    });
+
+    // Trocar a cada 10 minutos (600000 ms)
+    setInterval(() => {
+        if (mediaElements.length === 0) return;
+        
+        // Remove a classe active de todos
+        mediaElements.forEach(el => el.classList.remove('active-media'));
+        
+        // Pega o próximo
+        currentIndex = (currentIndex + 1) % mediaElements.length;
+        const nextMedia = mediaElements[currentIndex];
+        
+        if (nextMedia) {
+            nextMedia.classList.add('active-media');
+            // Ocultar o canvas se houver mídia ativa
+            document.getElementById('bgCanvas').style.opacity = '0';
+        }
+    }, 600000);
+
+    // Ativar o primeiro após um breve delay para garantir carregamento
+    setTimeout(() => {
+        if (mediaElements.length > 0) {
+            mediaElements[0].classList.add('active-media');
+            document.getElementById('bgCanvas').style.opacity = '0';
+        }
+    }, 2000);
 }
 
 // Start

@@ -28,7 +28,33 @@ body {
     overflow-x: hidden;
 }
 
-/* Background Canvas & Overlay */
+/* Background Canvas, Media & Overlay */
+#mediaBgContainer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -3;
+    overflow: hidden;
+    background-color: #000;
+}
+
+#mediaBgContainer img, #mediaBgContainer video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+}
+
+#mediaBgContainer .active-media {
+    opacity: 1;
+}
+
 #bgCanvas {
     position: fixed;
     top: 0;
@@ -71,12 +97,19 @@ body {
     border-radius: 16px;
     padding: 1rem 2rem;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    z-index: 50; /* Aumentar z-index para ficar acima de tudo */
 }
 
 .logo-area {
     display: flex;
     align-items: center;
     gap: 1rem;
+}
+
+.main-logo {
+    height: 45px;
+    width: auto;
+    object-fit: contain;
 }
 
 .neon-logo {
@@ -179,11 +212,11 @@ body {
     box-shadow: 0 8px 32px rgba(0,0,0,0.5);
     border-radius: 8px;
     border: 1px solid var(--panel-border);
-    z-index: 10;
+    z-index: 1000; /* Forçar sobreposição sobre grid/search */
     overflow: hidden;
 }
 
-.dropdown:hover .dropdown-content {
+.dropdown-content.show {
     display: block;
 }
 
@@ -259,38 +292,86 @@ body {
 
 /* Card */
 .project-card {
-    background: var(--panel-bg);
-    border: 1px solid var(--panel-border);
+    background: transparent;
+    border: none;
     border-radius: 16px;
     padding: 1.5rem;
     display: flex;
     align-items: center;
     gap: 1.5rem;
-    backdrop-filter: blur(10px);
-    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
     cursor: pointer;
     position: relative;
     overflow: hidden;
+    z-index: 1;
+}
+
+.project-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(from 0deg, transparent 70%, rgba(255, 42, 42, 0.5) 100%);
+    animation: sweepLight 15s linear infinite;
+    opacity: 0; /* Começa invisível */
+    z-index: -2;
+}
+
+/* Stagger a animação para não acontecerem juntas */
+.project-card:nth-child(3n+1)::before { animation-delay: 0s; }
+.project-card:nth-child(3n+2)::before { animation-delay: 5s; }
+.project-card:nth-child(3n)::before { animation-delay: 10s; }
+
+.project-card::after {
+    content: '';
+    position: absolute;
+    inset: 1px; /* Espessura da borda brilhante */
+    background: var(--panel-bg);
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+    z-index: -1;
+}
+
+@keyframes sweepLight {
+    0%, 80% { opacity: 0; transform: rotate(0deg); }
+    85% { opacity: 1; }
+    95% { opacity: 1; }
+    100% { opacity: 0; transform: rotate(360deg); }
 }
 
 .project-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.project-card:hover::before {
+    background: conic-gradient(from 0deg, transparent 50%, rgba(255, 42, 42, 0.8) 100%);
+    animation: rotateLight 3s linear infinite; 
+    opacity: 1;
+}
+
+@keyframes rotateLight {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 .card-icon {
     width: 60px;
     height: 60px;
     border-radius: 12px;
-    border: 1px solid var(--neon-red);
+    border: 1px solid rgba(255, 42, 42, 0.3);
+    background: rgba(255, 42, 42, 0.05); /* Fundo quase transparente */
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.8rem;
     color: var(--neon-red);
-    box-shadow: inset 0 0 15px rgba(255, 42, 42, 0.2), 0 0 15px rgba(255, 42, 42, 0.2);
+    box-shadow: inset 0 0 10px rgba(255, 42, 42, 0.1);
     flex-shrink: 0;
+    backdrop-filter: blur(5px);
+    z-index: 2; /* Para ficar acima do fundo pseudo-element */
 }
 
 .card-info {
