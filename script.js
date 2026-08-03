@@ -360,20 +360,19 @@ function initCanvas() {
 // Media Background Manager (Loop 10 mins)
 function initMediaBackgrounds() {
     const mediaContainer = document.getElementById('mediaBgContainer');
-    // Para funcionar localmente, nomeie os arquivos nesta ordem na pasta 'backgrounds'.
-    // Suporta vídeos e imagens.
+    
+    // Lista exata dos seus arquivos na pasta backgrounds
     const backgrounds = [
-        'bg1.mp4', 'bg1.webm', 'bg1.jpg', 'bg1.png',
-        'bg2.mp4', 'bg2.webm', 'bg2.jpg', 'bg2.png',
-        'bg3.mp4', 'bg3.webm', 'bg3.jpg', 'bg3.png'
+        'bg1.mp4',
+        'bg2.png',
+        'bg3.png'
     ];
     
     let currentIndex = 0;
     const mediaElements = [];
 
-    // Tentamos carregar os arquivos. Como é local, alguns falharão silenciosamente se não existirem, 
-    // mas os que existirem ficarão prontos.
-    backgrounds.forEach((file, index) => {
+    // Adiciona os elementos diretamente (browsers bloqueiam onload no protocolo file:// localmente)
+    backgrounds.forEach((file) => {
         let el;
         if (file.endsWith('.mp4') || file.endsWith('.webm')) {
             el = document.createElement('video');
@@ -387,12 +386,7 @@ function initMediaBackgrounds() {
             el.src = `backgrounds/${file}`;
         }
         
-        el.onerror = () => { el.remove(); }; // Remove do DOM se não existir
-        el.onload = () => { mediaElements.push(el); };
-        if (el.tagName === 'VIDEO') {
-            el.onloadeddata = () => { mediaElements.push(el); };
-        }
-        
+        mediaElements.push(el);
         mediaContainer.appendChild(el);
     });
 
@@ -412,15 +406,13 @@ function initMediaBackgrounds() {
             // Ocultar o canvas se houver mídia ativa
             document.getElementById('bgCanvas').style.opacity = '0';
         }
-    }, 600000);
+    }, 600000); // 10 minutos
 
-    // Ativar o primeiro após um breve delay para garantir carregamento
-    setTimeout(() => {
-        if (mediaElements.length > 0) {
-            mediaElements[0].classList.add('active-media');
-            document.getElementById('bgCanvas').style.opacity = '0';
-        }
-    }, 2000);
+    // Ativar o primeiro imediatamente
+    if (mediaElements.length > 0) {
+        mediaElements[0].classList.add('active-media');
+        document.getElementById('bgCanvas').style.opacity = '0';
+    }
 }
 
 // Start
