@@ -332,7 +332,12 @@ body {
     bottom: 1px;
     left: 1px;
     right: 1px;
-    background: #12121a; /* Cor HEX super escura e sólida (sem transparência) */
+    /* 
+       TRANSPARÊNCIA DOS CARTÕES:
+       Para alterar, mude o último número (0.75). 
+       0.0 = Invisível / 1.0 = Totalmente sólido
+    */
+    background: rgba(18, 18, 26, 0.75); 
     border-radius: 15px;
     z-index: -1;
 }
