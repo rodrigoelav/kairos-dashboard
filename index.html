@@ -1,320 +1,122 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kairós Motores - Projetos em Andamento</title>
-  <meta name="description" content="Painel interativo de gestão de projetos Kairós Motores com fundos dinâmicos e modo Smart TV.">
-  
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
-  
-  <!-- CSS Principal -->
-  <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Gestão - Kairós Motores</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <!-- Fundo Dinâmico (Vídeo / GIF / Canvas / Imagem) -->
-  <div id="bg-container" class="bg-container">
-    <canvas id="bg-canvas" class="bg-layer active"></canvas>
-    <video id="bg-video" class="bg-layer" loop muted playsinline></video>
-    <img id="bg-image" class="bg-layer" alt="Fundo Dinâmico">
-    <div id="bg-overlay" class="bg-overlay"></div>
-  </div>
+    <!-- Background Animado (Canvas) -->
+    <canvas id="bgCanvas"></canvas>
+    <div id="bgOverlay"></div>
 
-  <!-- Aplicação Principal -->
-  <div class="app-wrapper">
-
-    <!-- Cabeçalho -->
-    <header class="app-header">
-      <div class="header-left">
-        <div class="brand-logo" id="brand-logo-btn" title="Clique para alterar a logo ou marca">
-          <div class="logo-symbol">
-            <svg viewBox="0 0 100 100" class="logo-svg">
-              <circle cx="50" cy="50" r="45" fill="none" stroke="#dc2626" stroke-width="6" />
-              <circle cx="50" cy="30" r="18" fill="#e11d48" />
-              <path d="M 25 70 Q 50 35 75 70 Z" fill="#ffffff" opacity="0.9" />
-            </svg>
-          </div>
-          <div class="brand-text">
-            <span class="brand-name" id="brand-name-display">kairós</span>
-            <span class="brand-sub" id="brand-sub-display">MOTORES</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="header-center">
-        <h1 class="header-title" id="main-title">PROJETOS EM ANDAMENTO</h1>
-        <div class="header-line">
-          <span class="line-wing left"></span>
-          <span class="line-dot"></span>
-          <span class="line-wing right"></span>
-        </div>
-      </div>
-
-      <div class="header-right admin-controls">
-        <button id="btn-add-project" class="btn btn-primary" title="Adicionar Novo Projeto">
-          <svg class="icon-svg" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-          <span>Novo Projeto</span>
-        </button>
-
-        <button id="btn-bg-settings" class="btn btn-secondary" title="Configurar Fundo Dinâmico">
-          <svg class="icon-svg" viewBox="0 0 24 24"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
-          <span>Fundo Dinâmico</span>
-        </button>
-
-        <button id="btn-tv-mode" class="btn btn-accent" title="Ativar Modo Smart TV / Apresentação">
-          <svg class="icon-svg" viewBox="0 0 24 24"><path d="M7 21h10M12 17v4M3 5h18a2 2 0 012 2v8a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
-          <span>Modo TV</span>
-        </button>
-
-        <button id="btn-more-options" class="btn btn-icon" title="Opções e Backup">
-          <svg class="icon-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2" fill="currentColor"/><circle cx="12" cy="5" r="2" fill="currentColor"/><circle cx="12" cy="19" r="2" fill="currentColor"/></svg>
-        </button>
-      </div>
-    </header>
-
-    <!-- Barra de Métricas e Filtros -->
-    <section class="toolbar-section admin-controls">
-      <div class="metrics-bar">
-        <div class="metric-chip active" data-filter="all">
-          <span class="chip-label">Total</span>
-          <span class="chip-count" id="count-total">0</span>
-        </div>
-        <div class="metric-chip chip-green" data-filter="Em andamento">
-          <span class="chip-label">Em andamento</span>
-          <span class="chip-count" id="count-andamento">0</span>
-        </div>
-        <div class="metric-chip chip-yellow" data-filter="Em análise">
-          <span class="chip-label">Em análise</span>
-          <span class="chip-count" id="count-analise">0</span>
-        </div>
-        <div class="metric-chip chip-red" data-filter="Parado">
-          <span class="chip-label">Parados</span>
-          <span class="chip-count" id="count-parados">0</span>
-        </div>
-        <div class="metric-chip chip-blue" data-filter="Concluído">
-          <span class="chip-label">Concluídos</span>
-          <span class="chip-count" id="count-concluidos">0</span>
-        </div>
-      </div>
-
-      <div class="search-box">
-        <svg class="search-icon" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
-        <input type="text" id="search-input" placeholder="Buscar por projeto ou responsável...">
-      </div>
-    </section>
-
-    <!-- Grid de Projetos -->
-    <main class="projects-container">
-      <div id="projects-grid" class="projects-grid">
-        <!-- Os cartões são gerados dinamicamente via JS -->
-      </div>
-    </main>
-
-    <!-- Botão Flutuante de Sair do Modo TV (visível apenas no modo TV) -->
-    <button id="btn-exit-tv" class="btn-exit-tv hidden" title="Sair do Modo TV">
-      <svg class="icon-svg" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-      <span>Sair do Modo TV</span>
-    </button>
-  </div>
-
-  <!-- MODAL: Editar / Criar Projeto -->
-  <div id="modal-project" class="modal-backdrop hidden">
-    <div class="modal-content glass-card">
-      <div class="modal-header">
-        <h2 id="modal-project-title">Editar Projeto</h2>
-        <button class="btn-close-modal" id="btn-close-project-modal">&times;</button>
-      </div>
-      <form id="form-project" class="modal-body">
-        <input type="hidden" id="project-id">
-
-        <div class="form-group">
-          <label for="project-title-input">Nome do Projeto</label>
-          <input type="text" id="project-title-input" required placeholder="Ex: API Faturamento">
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label for="project-responsibles-input">Responsáveis</label>
-            <input type="text" id="project-responsibles-input" required placeholder="Ex: Douglas e Pedro">
-          </div>
-
-          <div class="form-group">
-            <label for="project-status-input">Status</label>
-            <select id="project-status-input">
-              <option value="Em andamento">Em andamento (Verde)</option>
-              <option value="Em análise">Em análise (Amarelo)</option>
-              <option value="Parado">Parado (Vermelho)</option>
-              <option value="Concluído">Concluído (Azul)</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label for="project-icon-input">Ícone do Cartão</label>
-            <select id="project-icon-input">
-              <option value="api">💻 API / Código</option>
-              <option value="cart">🛒 E-Commerce / Loja</option>
-              <option value="clipboard">📋 Peritagem / Auditoria</option>
-              <option value="report">📄 Relatório / Documento</option>
-              <option value="shield">🛡️ Qualidade / Segurança</option>
-              <option value="chart">📈 Produtividade / Gráficos</option>
-              <option value="idcard">🪪 Placa de Identificação</option>
-              <option value="globe">🌐 HUB / Web / Rede</option>
-              <option value="train">🚆 Ferrovia / Logística</option>
-              <option value="building">🏢 Start-Up / Unidade</option>
-              <option value="gear">⚙️ Motores / Mecânica</option>
-              <option value="box">📦 Estoque / Materiais</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="project-progress-input">Progresso (%)</label>
-            <input type="number" id="project-progress-input" min="0" max="100" value="50">
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="project-description-input">Descrição / Observações (Opcional)</label>
-          <textarea id="project-description-input" rows="3" placeholder="Detalhes técnicos, metas ou entregáveis..."></textarea>
-        </div>
-
-        <div class="modal-footer">
-          <button type="button" id="btn-delete-project" class="btn btn-danger hidden">Excluir Projeto</button>
-          <div class="footer-actions">
-            <button type="button" class="btn btn-secondary" id="btn-cancel-project">Cancelar</button>
-            <button type="submit" class="btn btn-primary">Salvar Alterações</button>
-          </div>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- MODAL: Fundo Dinâmico -->
-  <div id="modal-bg" class="modal-backdrop hidden">
-    <div class="modal-content glass-card">
-      <div class="modal-header">
-        <h2>Configurar Fundo Dinâmico</h2>
-        <button class="btn-close-modal" id="btn-close-bg-modal">&times;</button>
-      </div>
-      <div class="modal-body">
+    <div class="app-container" id="appContainer">
         
-        <div class="form-group">
-          <label>Tipo de Fundo</label>
-          <div class="bg-type-selector">
-            <button type="button" class="bg-type-btn active" data-type="canvas">⚙️ Partículas Tech (Canvas)</button>
-            <button type="button" class="bg-type-btn" data-type="video">🎥 Vídeo (MP4 / WebM)</button>
-            <button type="button" class="bg-type-btn" data-type="gif">🎨 GIF Animado / Imagem</button>
-          </div>
-        </div>
+        <!-- Cabeçalho (Oculto no Modo TV) -->
+        <header class="top-bar">
+            <div class="logo-area">
+                <i class="fa-solid fa-compact-disc neon-logo"></i>
+                <div class="title-group">
+                    <h1>kairós</h1>
+                    <span>MOTORES</span>
+                </div>
+            </div>
+            
+            <div class="controls-area">
+                <div class="slider-group">
+                    <label for="blurSlider">Desfoque Fundo:</label>
+                    <input type="range" id="blurSlider" min="0" max="20" value="5">
+                </div>
+                <div class="slider-group">
+                    <label for="opacitySlider">Escurecimento:</label>
+                    <input type="range" id="opacitySlider" min="0" max="1" step="0.1" value="0.7">
+                </div>
+                
+                <button class="btn btn-primary" id="btnAddProject">
+                    <i class="fa-solid fa-plus"></i> Novo Projeto
+                </button>
+                <div class="dropdown">
+                    <button class="btn btn-secondary">
+                        <i class="fa-solid fa-cog"></i>
+                    </button>
+                    <div class="dropdown-content">
+                        <a href="#" id="btnExport"><i class="fa-solid fa-download"></i> Exportar Backup (JSON)</a>
+                        <label for="importFile" class="import-label"><i class="fa-solid fa-upload"></i> Importar Backup</label>
+                        <input type="file" id="importFile" accept=".json" style="display: none;">
+                        <a href="#" id="btnTVMode"><i class="fa-solid fa-tv"></i> Modo Apresentação</a>
+                    </div>
+                </div>
+            </div>
+        </header>
 
-        <!-- Opções do Vídeo -->
-        <div id="bg-video-options" class="bg-option-panel hidden">
-          <div class="form-group">
-            <label for="bg-video-url">URL do Vídeo (MP4 / WebM)</label>
-            <input type="text" id="bg-video-url" placeholder="https://exemplo.com/video-futurista.mp4">
-          </div>
-          <div class="form-group">
-            <label for="bg-video-file">Ou carregar arquivo local (Vídeo MP4)</label>
-            <input type="file" id="bg-video-file" accept="video/mp4,video/webm">
-          </div>
-          <div class="preset-suggestions">
-            <span>Vídeos Recomendados:</span>
-            <button type="button" class="preset-link" data-url="https://assets.mixkit.co/videos/preview/mixkit-circuit-board-loop-animation-43098-large.mp4">Circuito Tech Red</button>
-            <button type="button" class="preset-link" data-url="https://assets.mixkit.co/videos/preview/mixkit-digital-animation-of-screens-and-data-41544-large.mp4">Data Cyber</button>
-          </div>
-        </div>
+        <main>
+            <div class="section-title">
+                <h2>PROJETOS EM ANDAMENTO</h2>
+                <div class="search-bar">
+                    <i class="fa-solid fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Buscar projeto ou responsável...">
+                </div>
+            </div>
 
-        <!-- Opções de GIF / Imagem -->
-        <div id="bg-gif-options" class="bg-option-panel hidden">
-          <div class="form-group">
-            <label for="bg-gif-url">URL do GIF ou Imagem</label>
-            <input type="text" id="bg-gif-url" placeholder="https://exemplo.com/fundo-engrenagens.gif">
-          </div>
-          <div class="form-group">
-            <label for="bg-gif-file">Ou carregar arquivo local (GIF, PNG, JPG)</label>
-            <input type="file" id="bg-gif-file" accept="image/gif,image/png,image/jpeg,image/webp">
-          </div>
-        </div>
-
-        <!-- Opções do Canvas -->
-        <div id="bg-canvas-options" class="bg-option-panel">
-          <p class="help-text">O Canvas Tech renderiza esquemas técnicos e nós interativos com tema Kairós Motores (Zero impacto de rede, 100% suave).</p>
-          <div class="form-group">
-            <label for="bg-canvas-speed">Velocidade da Animação</label>
-            <input type="range" id="bg-canvas-speed" min="1" max="5" value="2">
-          </div>
-        </div>
-
-        <!-- Ajustes Finos (Escurecimento e Desfoque) -->
-        <hr class="divider">
-
-        <div class="form-row">
-          <div class="form-group">
-            <label for="bg-overlay-opacity">Escurecimento do Fundo (<span id="opacity-val">70%</span>)</label>
-            <input type="range" id="bg-overlay-opacity" min="0" max="95" value="70">
-          </div>
-          <div class="form-group">
-            <label for="bg-blur-amount">Desfoque do Fundo (<span id="blur-val">2px</span>)</label>
-            <input type="range" id="bg-blur-amount" min="0" max="20" value="2">
-          </div>
-        </div>
-
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" id="btn-close-bg-modal-2">Concluir</button>
-        </div>
-
-      </div>
+            <div class="projects-grid" id="projectsGrid">
+                <!-- Cartões serão injetados aqui via JavaScript -->
+            </div>
+        </main>
     </div>
-  </div>
 
-  <!-- MODAL: Opções Avançadas & Backup -->
-  <div id="modal-options" class="modal-backdrop hidden">
-    <div class="modal-content glass-card">
-      <div class="modal-header">
-        <h2>Opções & Backup</h2>
-        <button class="btn-close-modal" id="btn-close-options-modal">&times;</button>
-      </div>
-      <div class="modal-body">
-        
-        <div class="options-section">
-          <h3>🔗 Link para Smart TV / Apresentação</h3>
-          <p class="help-text">Para abrir direto no modo TV sem botões de edição, use o link abaixo:</p>
-          <div class="copy-link-box">
-            <input type="text" id="tv-share-url" readonly>
-            <button id="btn-copy-tv-url" class="btn btn-secondary">Copiar Link</button>
-          </div>
+    <!-- Modal Adicionar/Editar Projeto -->
+    <div class="modal-overlay" id="projectModal">
+        <div class="modal-content glass-panel">
+            <h2 id="modalTitle">Adicionar Projeto</h2>
+            <form id="projectForm">
+                <input type="hidden" id="projectId">
+                
+                <div class="form-group">
+                    <label for="projName">Nome do Projeto</label>
+                    <input type="text" id="projName" required placeholder="Ex: API Faturamento">
+                </div>
+                
+                <div class="form-group">
+                    <label for="projAssignees">Responsáveis</label>
+                    <input type="text" id="projAssignees" required placeholder="Ex: Douglas e Pedro">
+                </div>
+                
+                <div class="form-group">
+                    <label for="projIcon">Ícone (FontAwesome class)</label>
+                    <input type="text" id="projIcon" value="fa-solid fa-laptop-code" placeholder="Ex: fa-solid fa-chart-line">
+                    <small>Consulte <a href="https://fontawesome.com/icons" target="_blank" style="color:var(--text-muted)">FontAwesome</a></small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="projStatus">Status</label>
+                    <select id="projStatus">
+                        <option value="Em andamento">Em andamento</option>
+                        <option value="Em análise">Em análise</option>
+                        <option value="Parado">Parado</option>
+                        <option value="Concluído">Concluído</option>
+                    </select>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="btnCancelModal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="btnDeleteProject" style="display: none;">Excluir</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
         </div>
-
-        <hr class="divider">
-
-        <div class="options-section">
-          <h3>💾 Importar / Exportar Dados</h3>
-          <p class="help-text">Faça backup dos seus projetos ou transfira a configuração para outro computador/TV.</p>
-          <div class="button-group">
-            <button id="btn-export-data" class="btn btn-secondary">📥 Exportar Backup (JSON)</button>
-            <button id="btn-trigger-import" class="btn btn-secondary">📤 Importar Backup (JSON)</button>
-            <input type="file" id="import-file-input" accept=".json" class="hidden">
-          </div>
-        </div>
-
-        <hr class="divider">
-
-        <div class="options-section">
-          <h3>🔄 Restaurar Padrões</h3>
-          <p class="help-text">Voltar para os 10 projetos originais da Kairós Motores.</p>
-          <button id="btn-reset-defaults" class="btn btn-danger">Restaurar Projetos Iniciais</button>
-        </div>
-
-      </div>
     </div>
-  </div>
 
-  <!-- JavaScript Principal -->
-  <script src="app.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
