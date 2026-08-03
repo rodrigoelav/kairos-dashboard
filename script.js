@@ -363,9 +363,6 @@ function initMediaBackgrounds() {
     // Para funcionar localmente, nomeie os arquivos nesta ordem na pasta 'backgrounds'.
     // Suporta vídeos e imagens.
     const backgrounds = [
-        'Blueprints_and_schematics_rotate_202608031525.mp4',
-        'ChatGPT Image 3 de ago. de 2026, 15_18_40.png',
-        'ChatGPT Image 3 de ago. de 2026, 15_25_20.png',
         'bg1.mp4', 'bg1.webm', 'bg1.jpg', 'bg1.png',
         'bg2.mp4', 'bg2.webm', 'bg2.jpg', 'bg2.png',
         'bg3.mp4', 'bg3.webm', 'bg3.jpg', 'bg3.png'

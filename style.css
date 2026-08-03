@@ -506,4 +506,26 @@ body.tv-mode .section-title h2 {
 
 body.tv-mode .project-card {
     pointer-events: none;
+    animation: floating3D 8s infinite alternate ease-in-out;
+}
+
+body.tv-mode .project-card:nth-child(even) {
+    animation-delay: -3s;
+    animation-duration: 9s;
+}
+
+body.tv-mode .project-card:nth-child(3n) {
+    animation-delay: -5s;
+    animation-duration: 11s;
+}
+
+@keyframes floating3D {
+    0% {
+        transform: perspective(1000px) rotateX(2deg) rotateY(-2deg) translateZ(0);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+    100% {
+        transform: perspective(1000px) rotateX(-2deg) rotateY(2deg) translateZ(10px) translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+    }
 }
