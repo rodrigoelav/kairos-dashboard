@@ -1,0 +1,29 @@
+{
+  "bgConfig": {
+    "type": "video",
+    "videoUrl": "https://cdn.pixabay.com/video/2025/06/11/285224_large.mp4",
+    "gifUrl": "",
+    "localFile": 0,
+    "opacity": "35",
+    "blur": "6",
+    "canvasSpeed": 1.5,
+    "playlist": [
+      {
+        "url": "https://cdn.pixabay.com/video/2025/11/27/318357_large.mp4",
+        "duration": 0.5
+      },
+      {
+        "url": "https://cdn.pixabay.com/video/2023/06/29/169334-841069100_large.mp4",
+        "duration": 0.5
+      }
+    ],
+    "musicPlaylist": [
+      {
+        "url": "music\\alex-morgan-jazz-restaurant-music-556244 (1).mp3",
+        "duration": 60
+      }
+    ],
+    "musicVolume": 0,
+    "musicMuted": false
+  }
+}

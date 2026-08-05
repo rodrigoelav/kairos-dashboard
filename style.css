@@ -1,5 +1,5 @@
 /* ==========================================================================
-   KAIRÓS MOTORES – DESIGN SYSTEM FINAL (DIAS EM BOLINHAS HORIZONTAIS)
+   KAIRÓS MOTORES – DESIGN SYSTEM FINAL (COMPATÍVEL COM TV)
    ========================================================================== */
 :root {
   --bg-dark: #090c10;
@@ -76,7 +76,7 @@ html, body { width:100%; min-height:100vh; background:var(--bg-dark); color:var(
 .icon-svg { width:18px; height:18px; }
 .btn-primary { background:linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color:#fff; box-shadow:0 4px 14px rgba(220,38,38,0.35); }
 .btn-primary:hover { background:linear-gradient(135deg, #ef4444 0%, #dc2626 100%); transform:translateY(-1px); box-shadow:0 6px 20px rgba(239,68,68,0.5); }
-.btn-secondary { background:rgba(255,255,255,0.06); color:#e5e7eb; border-color:rgba(255,255,255,0.12); backdrop-filter:blur(8px); }
+.btn-secondary { background:rgba(255,255,255,0.06); color:#e5e7eb; border-color:rgba(255,255,255,0.12); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); }
 .btn-secondary:hover { background:rgba(255,255,255,0.12); border-color:rgba(255,255,255,0.25); transform:translateY(-1px); }
 .btn-accent { background:rgba(59,130,246,0.15); color:#60a5fa; border-color:rgba(59,130,246,0.3); }
 .btn-accent:hover { background:rgba(59,130,246,0.25); border-color:rgba(59,130,246,0.5); transform:translateY(-1px); }
@@ -110,7 +110,11 @@ html, body { width:100%; min-height:100vh; background:var(--bg-dark); color:var(
 .search-box input:focus { border-color:var(--color-red); box-shadow:0 0 12px var(--color-red-glow); }
 
 /* Grid de cartões */
-.projects-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
+.projects-grid {
+  display:grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap:22px;
+}
 .project-card {
   position:relative; background:var(--bg-card); border:1.5px solid var(--border-card);
   border-radius:18px; padding:18px 20px;
@@ -193,11 +197,11 @@ html, body { width:100%; min-height:100vh; background:var(--bg-dark); color:var(
   display: flex;
   align-items: center;
   gap: 20px;
-  z-index: 5;                /* atrás dos cartões (z-index 10) */
+  z-index: 5;
 }
 .tv-weekdays {
   display: flex;
-  flex-direction: row;       /* horizontal */
+  flex-direction: row;
   gap: 10px;
   align-items: center;
 }
@@ -248,7 +252,8 @@ html, body { width:100%; min-height:100vh; background:var(--bg-dark); color:var(
   position:fixed; bottom:24px; right:24px; z-index:100;
   display:inline-flex; align-items:center; gap:8px; padding:10px 20px; border-radius:30px;
   background:rgba(9,12,16,0.85); color:#fff; border:1px solid rgba(255,255,255,0.2);
-  backdrop-filter:blur(10px); cursor:pointer; box-shadow:0 8px 24px rgba(0,0,0,0.5);
+  backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+  cursor:pointer; box-shadow:0 8px 24px rgba(0,0,0,0.5);
   transition:transform var(--transition-fast);
 }
 .btn-exit-tv:hover { transform:scale(1.05); border-color:var(--color-red); }
@@ -259,7 +264,6 @@ html, body { width:100%; min-height:100vh; background:var(--bg-dark); color:var(
 body.tv-mode .admin-controls {
   display: none !important;
 }
-/* Apenas o botão Sair é mostrado */
 body.tv-mode .btn-exit-tv {
   display: inline-flex !important;
 }
@@ -280,7 +284,8 @@ body.tv-mode .projects-container {
 /* Modais */
 .modal-backdrop {
   position:fixed; top:0; left:0; width:100vw; height:100vh;
-  background:rgba(0,0,0,0.75); backdrop-filter:blur(8px); z-index:1000;
+  background:rgba(0,0,0,0.75); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+  z-index:1000;
   display:flex; align-items:center; justify-content:center; padding:20px;
   opacity:0; pointer-events:none; transition:opacity 0.25s ease;
 }
@@ -354,6 +359,24 @@ body.tv-mode .projects-container {
 }
 .playlist-row input[type="number"] {
   width: 70px;
+}
+
+/* Música de Fundo */
+#music-playlist-container .playlist-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+#music-playlist-container .playlist-row input[type="text"] {
+  flex: 2;
+}
+#music-playlist-container .playlist-row input[type="number"] {
+  width: 70px;
+}
+#btn-toggle-mute {
+  padding: 6px 12px;
+  font-size: 0.85rem;
 }
 
 /* Animações padrão */

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   KAIRÓS MOTORES – DASHBOARD FINAL (PLAYLIST + ANIMAÇÃO BOEING + DIAS DA SEMANA)
+   KAIRÓS MOTORES – DASHBOARD FINAL (TV COMPATÍVEL + CONFIG.JSON)
    ========================================================================== */
 
 // ===== DIAGNÓSTICO INICIAL =====
@@ -17,7 +17,7 @@
     console.error('❌ Canvas não encontrado!');
   }
 
-  window.addEventListener('DOMContentLoaded', function() {
+  window.addEventListener('DOMContentLoaded', function () {
     const overlay = document.getElementById('bg-overlay');
     if (overlay) {
       overlay.style.background = 'rgba(9,12,16, 0.1)';
@@ -47,12 +47,25 @@ const LOCAL_BACKGROUNDS = [
   { name: 'bg3.png (Imagem)', file: 'backgrounds/bg3.png', type: 'image' }
 ];
 
-let projects = JSON.parse(localStorage.getItem('kairos_projects_v2')) || INITIAL_PROJECTS;
+let projects;
+try {
+  projects = JSON.parse(localStorage.getItem('kairos_projects_v2')) || INITIAL_PROJECTS;
+} catch (e) {
+  console.warn('Erro ao ler projetos do localStorage, usando padrão');
+  projects = INITIAL_PROJECTS;
+}
+
 let activeFilter = 'all';
 let searchQuery = '';
 let isTvMode = new URLSearchParams(window.location.search).get('mode') === 'tv';
 
-let bgConfig = JSON.parse(localStorage.getItem('kairos_bg_config'));
+let bgConfig;
+try {
+  bgConfig = JSON.parse(localStorage.getItem('kairos_bg_config'));
+} catch (e) {
+  console.warn('Erro ao ler bgConfig do localStorage, usando padrão');
+  bgConfig = null;
+}
 if (!bgConfig || !bgConfig.type) {
   bgConfig = {
     type: 'canvas',
@@ -62,13 +75,20 @@ if (!bgConfig || !bgConfig.type) {
     opacity: 10,
     blur: 0,
     canvasSpeed: 2,
-    playlist: []   // { url, duration }
+    playlist: [],
+    musicPlaylist: [],
+    musicVolume: 30,
+    musicMuted: false
   };
 }
 
 function saveState() {
-  localStorage.setItem('kairos_projects_v2', JSON.stringify(projects));
-  localStorage.setItem('kairos_bg_config', JSON.stringify(bgConfig));
+  try {
+    localStorage.setItem('kairos_projects_v2', JSON.stringify(projects));
+    localStorage.setItem('kairos_bg_config', JSON.stringify(bgConfig));
+  } catch (e) {
+    console.warn('Não foi possível salvar no localStorage');
+  }
 }
 
 // 3. ÍCONES SVG
@@ -103,7 +123,7 @@ const NEXT_STATUS = {
   'Concluído': 'Em andamento'
 };
 
-// 4. RENDERIZAÇÃO (com suporte à animação Boeing apenas no modo TV)
+// 4. RENDERIZAÇÃO
 function renderProjects(animateBoeing = false) {
   const grid = document.getElementById('projects-grid');
   grid.innerHTML = '';
@@ -111,7 +131,7 @@ function renderProjects(animateBoeing = false) {
   const filtered = projects.filter(p => {
     const matchesFilter = activeFilter === 'all' || p.status === activeFilter;
     const matchesSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          p.responsibles.toLowerCase().includes(searchQuery.toLowerCase());
+      p.responsibles.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesFilter && matchesSearch;
   });
 
@@ -128,22 +148,22 @@ function renderProjects(animateBoeing = false) {
     const statusInfo = STATUS_MAP[project.status] || STATUS_MAP['Em andamento'];
 
     card.innerHTML = `
-      <div class="card-icon-wrapper">${getIconSvg(project.icon)}</div>
-      <div class="card-content">
-        <h3 class="card-title">${escapeHtml(project.title)}</h3>
-        <p class="card-responsibilities">(${escapeHtml(project.responsibles)})</p>
-      </div>
-      <div class="card-footer">
-        <span class="status-badge ${statusInfo.class}">${escapeHtml(project.status)}</span>
-      </div>
-      <div class="progress-bar">
-        <div class="progress-fill" style="width: ${project.progress || 0}%"></div>
-      </div>
-      <div class="card-description">${escapeHtml(project.description)}</div>
-      <button class="card-edit-btn" title="Editar">
-        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-      </button>
-    `;
+            <div class="card-icon-wrapper">${getIconSvg(project.icon)}</div>
+            <div class="card-content">
+                <h3 class="card-title">${escapeHtml(project.title)}</h3>
+                <p class="card-responsibilities">(${escapeHtml(project.responsibles)})</p>
+            </div>
+            <div class="card-footer">
+                <span class="status-badge ${statusInfo.class}">${escapeHtml(project.status)}</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: ${project.progress || 0}%"></div>
+            </div>
+            <div class="card-description">${escapeHtml(project.description)}</div>
+            <button class="card-edit-btn" title="Editar">
+                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+        `;
 
     card.querySelector('.status-badge').addEventListener('click', (e) => {
       e.stopPropagation();
@@ -183,7 +203,7 @@ function cycleProjectStatus(id) {
   }
 }
 
-function escapeHtml(str) { return str.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'})[m]); }
+function escapeHtml(str) { return str.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[m]); }
 
 // 5. MODAIS DE PROJETO
 const projectModal = document.getElementById('modal-project');
@@ -245,7 +265,7 @@ document.getElementById('btn-delete-project').addEventListener('click', () => {
 document.getElementById('btn-close-project-modal').addEventListener('click', () => projectModal.classList.add('hidden'));
 document.getElementById('btn-cancel-project').addEventListener('click', () => projectModal.classList.add('hidden'));
 
-// 6. FUNDO DINÂMICO (VÍDEO RECRIADO + PLAYLIST)
+// 6. FUNDO DINÂMICO
 const bgCanvas = document.getElementById('bg-canvas');
 const bgOverlay = document.getElementById('bg-overlay');
 let bgVideo = document.getElementById('bg-video');
@@ -300,7 +320,7 @@ function startVideoRotation(playlist) {
 
 function applyBackgroundConfig() {
   console.log('🎨 Aplicando fundo:', bgConfig.type, bgConfig);
-  
+
   bgCanvas.classList.remove('active');
   if (bgVideo) {
     bgVideo.classList.remove('active');
@@ -328,7 +348,7 @@ function applyBackgroundConfig() {
       newVideo.addEventListener('ended', () => {
         if (bgConfig.type === 'video') {
           newVideo.currentTime = 0;
-          newVideo.play().catch(() => {});
+          newVideo.play().catch(() => { });
         }
       });
       console.log('✅ Vídeo single ativado:', bgConfig.videoUrl);
@@ -348,7 +368,7 @@ function applyBackgroundConfig() {
         newVideo.addEventListener('ended', () => {
           if (bgConfig.type === 'local') {
             newVideo.currentTime = 0;
-            newVideo.play().catch(() => {});
+            newVideo.play().catch(() => { });
           }
         });
         console.log('✅ Vídeo local ativado:', local.file);
@@ -365,21 +385,21 @@ function applyBackgroundConfig() {
   }
 }
 
-// Canvas animation (mantido)
+// Canvas animation
 let canvasCtx = bgCanvas.getContext('2d');
 let animationFrameId, particles = [], gears = [], canvasAngle = 0;
 
 function initCanvasElements() {
   bgCanvas.width = window.innerWidth;
   bgCanvas.height = window.innerHeight;
-  particles = Array.from({length:40}, () => ({
-    x: Math.random()*bgCanvas.width, y: Math.random()*bgCanvas.height,
-    vx:(Math.random()-0.5)*0.6, vy:(Math.random()-0.5)*0.6,
-    radius:Math.random()*2+1
+  particles = Array.from({ length: 40 }, () => ({
+    x: Math.random() * bgCanvas.width, y: Math.random() * bgCanvas.height,
+    vx: (Math.random() - 0.5) * 0.6, vy: (Math.random() - 0.5) * 0.6,
+    radius: Math.random() * 2 + 1
   }));
   gears = [
-    { x:bgCanvas.width*0.15, y:bgCanvas.height*0.85, radius:140, teeth:12, speed:0.003 },
-    { x:bgCanvas.width*0.88, y:bgCanvas.height*0.2, radius:100, teeth:10, speed:-0.004 }
+    { x: bgCanvas.width * 0.15, y: bgCanvas.height * 0.85, radius: 140, teeth: 12, speed: 0.003 },
+    { x: bgCanvas.width * 0.88, y: bgCanvas.height * 0.2, radius: 100, teeth: 10, speed: -0.004 }
   ];
 }
 
@@ -444,17 +464,21 @@ document.getElementById('btn-bg-settings').addEventListener('click', () => {
   updateBgSelectorUI();
   renderLocalBackgrounds();
   renderPlaylistItems();
+  renderMusicPlaylistItems();
+  document.getElementById('music-volume').value = bgConfig.musicVolume;
+  document.getElementById('mute-icon').textContent = bgConfig.musicMuted ? '🔇' : '🔊';
+  document.getElementById('mute-label').textContent = bgConfig.musicMuted ? 'Ativar som' : 'Mutar';
 });
 
 function renderLocalBackgrounds() {
   const container = document.getElementById('local-bg-list');
   if (!container) return;
   container.innerHTML = LOCAL_BACKGROUNDS.map((bg, idx) => `
-    <button class="local-bg-item ${bgConfig.type === 'local' && bgConfig.localFile === idx ? 'active' : ''}"
-            data-index="${idx}">
-      <span>${bg.name}</span>
-    </button>
-  `).join('');
+        <button class="local-bg-item ${bgConfig.type === 'local' && bgConfig.localFile === idx ? 'active' : ''}"
+                data-index="${idx}">
+            <span>${bg.name}</span>
+        </button>
+    `).join('');
   document.querySelectorAll('.local-bg-item').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const index = parseInt(e.currentTarget.dataset.index, 10);
@@ -467,7 +491,6 @@ function renderLocalBackgrounds() {
   });
 }
 
-// Funções da Playlist
 function renderPlaylistItems() {
   const container = document.getElementById('playlist-container');
   if (!container) return;
@@ -479,17 +502,17 @@ function renderPlaylistItems() {
     const row = document.createElement('div');
     row.className = 'playlist-row';
     row.innerHTML = `
-      <input type="text" class="playlist-url" value="${escapeHtml(item.url)}" placeholder="URL do vídeo" data-index="${index}">
-      <input type="number" class="playlist-duration" value="${item.duration || 2}" min="0.5" max="60" step="0.5" data-index="${index}">
-      <button type="button" class="btn btn-danger btn-remove-playlist-item" data-index="${index}" title="Remover">
-        <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    `;
+            <input type="text" class="playlist-url" value="${escapeHtml(item.url)}" placeholder="URL do vídeo" data-index="${index}">
+            <input type="number" class="playlist-duration" value="${item.duration || 2}" min="0.5" max="60" step="0.5" data-index="${index}">
+            <button type="button" class="btn btn-danger btn-remove-playlist-item" data-index="${index}" title="Remover">
+                <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        `;
     container.appendChild(row);
   });
 
   document.querySelectorAll('.playlist-url').forEach(input => {
-    input.addEventListener('input', function(e) {
+    input.addEventListener('input', function (e) {
       const idx = parseInt(this.dataset.index);
       bgConfig.playlist[idx].url = this.value.trim();
       saveState();
@@ -497,7 +520,7 @@ function renderPlaylistItems() {
   });
 
   document.querySelectorAll('.playlist-duration').forEach(input => {
-    input.addEventListener('input', function(e) {
+    input.addEventListener('input', function (e) {
       const idx = parseInt(this.dataset.index);
       bgConfig.playlist[idx].duration = parseFloat(this.value) || 2;
       saveState();
@@ -505,7 +528,7 @@ function renderPlaylistItems() {
   });
 
   document.querySelectorAll('.btn-remove-playlist-item').forEach(btn => {
-    btn.addEventListener('click', function(e) {
+    btn.addEventListener('click', function (e) {
       const idx = parseInt(this.dataset.index);
       bgConfig.playlist.splice(idx, 1);
       saveState();
@@ -522,6 +545,187 @@ function addPlaylistItem() {
 }
 
 document.getElementById('btn-add-playlist-item')?.addEventListener('click', addPlaylistItem);
+
+
+// --- MÚSICA DE FUNDO (CORRIGIDA) ---
+let audioElement = null;
+let musicTimer = null;
+let userHasInteracted = false;
+
+function createAudioElement() {
+  if (audioElement) return audioElement;
+  audioElement = document.createElement('audio');
+  audioElement.id = 'bg-music';
+  audioElement.loop = false;
+  audioElement.style.display = 'none';
+  document.body.appendChild(audioElement);
+  return audioElement;
+}
+
+function stopMusic() {
+  if (musicTimer) {
+    clearTimeout(musicTimer);
+    musicTimer = null;
+  }
+  if (audioElement) {
+    audioElement.pause();
+    audioElement.removeAttribute('src');
+  }
+}
+
+function startMusicRotation(playlist) {
+  if (!playlist || playlist.length === 0) return;
+  createAudioElement();
+
+  if (musicTimer) clearTimeout(musicTimer);
+
+  let currentIndex = 0;
+
+  function playNext() {
+    if (!bgConfig.musicPlaylist || bgConfig.musicPlaylist.length === 0) return;
+    if (bgConfig.musicMuted || bgConfig.musicVolume <= 0) return;
+
+    const item = bgConfig.musicPlaylist[currentIndex];
+    if (!item || !item.url) {
+      currentIndex = (currentIndex + 1) % bgConfig.musicPlaylist.length;
+      musicTimer = setTimeout(playNext, 1000);
+      return;
+    }
+
+    audioElement.src = item.url;
+    audioElement.volume = bgConfig.musicVolume / 100;
+    audioElement.currentTime = 0;
+
+    if (userHasInteracted) {
+      const playPromise = audioElement.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          console.log('🎵 Tocando agora:', item.url);
+        }).catch(e => {
+          console.warn('🔇 Áudio retido. O navegador ainda está bloqueando.');
+        });
+      }
+    } else {
+      console.log('🔇 Música na agulha! Aguardando o seu primeiro clique na tela para tocar...');
+    }
+
+    const durationMs = (item.duration || 2) * 60 * 1000;
+    currentIndex = (currentIndex + 1) % bgConfig.musicPlaylist.length;
+
+    clearTimeout(musicTimer);
+    musicTimer = setTimeout(playNext, durationMs);
+  }
+
+  playNext();
+}
+
+function applyMusicConfig() {
+  stopMusic();
+  const playlist = bgConfig.musicPlaylist || [];
+  if (playlist.length > 0 && !bgConfig.musicMuted && bgConfig.musicVolume > 0) {
+    startMusicRotation(playlist);
+  }
+}
+
+function updateMusicVolume() {
+  if (audioElement) {
+    audioElement.volume = bgConfig.musicMuted ? 0 : bgConfig.musicVolume / 100;
+  }
+}
+
+function renderMusicPlaylistItems() {
+  const container = document.getElementById('music-playlist-container');
+  if (!container) return;
+  container.innerHTML = '';
+
+  if (!bgConfig.musicPlaylist) bgConfig.musicPlaylist = [];
+
+  bgConfig.musicPlaylist.forEach((item, idx) => {
+    const row = document.createElement('div');
+    row.className = 'playlist-row';
+    row.innerHTML = `
+            <input type="text" class="music-url" value="${escapeHtml(item.url || '')}" placeholder="URL da música (.mp3)" data-index="${idx}">
+            <input type="number" class="music-duration" value="${item.duration || 2}" min="0.5" max="60" step="0.5" data-index="${idx}">
+            <button type="button" class="btn btn-danger btn-remove-music-item" data-index="${idx}" title="Remover">
+                <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        `;
+    container.appendChild(row);
+  });
+
+  document.querySelectorAll('.music-url').forEach(input => {
+    input.addEventListener('change', function (e) {
+      const idx = parseInt(this.dataset.index);
+      if (bgConfig.musicPlaylist[idx]) {
+        bgConfig.musicPlaylist[idx].url = this.value.trim();
+        saveState();
+        applyMusicConfig();
+      }
+    });
+  });
+
+  document.querySelectorAll('.music-duration').forEach(input => {
+    input.addEventListener('change', function (e) {
+      const idx = parseInt(this.dataset.index);
+      if (bgConfig.musicPlaylist[idx]) {
+        bgConfig.musicPlaylist[idx].duration = parseFloat(this.value) || 2;
+        saveState();
+      }
+    });
+  });
+
+  document.querySelectorAll('.btn-remove-music-item').forEach(btn => {
+    btn.addEventListener('click', function (e) {
+      const idx = parseInt(this.dataset.index);
+      bgConfig.musicPlaylist.splice(idx, 1);
+      saveState();
+      renderMusicPlaylistItems();
+      applyMusicConfig();
+    });
+  });
+}
+
+document.getElementById('btn-add-music-item').addEventListener('click', () => {
+  if (!bgConfig.musicPlaylist) bgConfig.musicPlaylist = [];
+  bgConfig.musicPlaylist.push({ url: '', duration: 2 });
+  saveState();
+  renderMusicPlaylistItems();
+});
+
+document.getElementById('music-volume').addEventListener('input', e => {
+  bgConfig.musicVolume = parseInt(e.target.value);
+  saveState();
+  updateMusicVolume();
+});
+
+document.getElementById('btn-toggle-mute').addEventListener('click', () => {
+  bgConfig.musicMuted = !bgConfig.musicMuted;
+  saveState();
+  const icon = document.getElementById('mute-icon');
+  const label = document.getElementById('mute-label');
+  if (bgConfig.musicMuted) {
+    icon.textContent = '🔇';
+    label.textContent = 'Ativar som';
+    stopMusic();
+  } else {
+    icon.textContent = '🔊';
+    label.textContent = 'Mutar';
+    applyMusicConfig();
+  }
+});
+
+window.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    if (document.getElementById('music-volume')) {
+      document.getElementById('music-volume').value = bgConfig.musicVolume;
+    }
+    if (document.getElementById('mute-icon')) {
+      document.getElementById('mute-icon').textContent = bgConfig.musicMuted ? '🔇' : '🔊';
+      document.getElementById('mute-label').textContent = bgConfig.musicMuted ? 'Ativar som' : 'Mutar';
+    }
+    applyMusicConfig();
+  }, 500);
+});
 
 document.querySelectorAll('.bg-type-btn').forEach(btn => btn.addEventListener('click', (e) => {
   const type = e.target.dataset.type;
@@ -541,7 +745,6 @@ function updateBgSelectorUI() {
   document.getElementById('bg-local-options').classList.toggle('hidden', bgConfig.type !== 'local');
 }
 
-// Botão Aplicar para URLs (atualizado para guardar a playlist)
 document.querySelectorAll('.btn-apply-bg').forEach(btn => {
   btn.addEventListener('click', () => {
     const target = btn.dataset.target;
@@ -561,9 +764,8 @@ document.querySelectorAll('.btn-apply-bg').forEach(btn => {
   });
 });
 
-// Upload de arquivos
 document.getElementById('bg-video-file').addEventListener('change', e => {
-  if(e.target.files[0]) {
+  if (e.target.files[0]) {
     bgConfig.videoUrl = URL.createObjectURL(e.target.files[0]);
     bgConfig.type = 'video';
     console.log('📁 Vídeo carregado por upload');
@@ -573,7 +775,7 @@ document.getElementById('bg-video-file').addEventListener('change', e => {
   }
 });
 document.getElementById('bg-gif-file').addEventListener('change', e => {
-  if(e.target.files[0]) {
+  if (e.target.files[0]) {
     bgConfig.gifUrl = URL.createObjectURL(e.target.files[0]);
     bgConfig.type = 'gif';
     console.log('📁 Imagem carregada por upload');
@@ -583,7 +785,6 @@ document.getElementById('bg-gif-file').addEventListener('change', e => {
   }
 });
 
-// Presets
 document.querySelectorAll('.preset-link').forEach(link => link.addEventListener('click', (e) => {
   const url = e.target.dataset.url;
   document.getElementById('bg-video-url').value = url;
@@ -595,7 +796,6 @@ document.querySelectorAll('.preset-link').forEach(link => link.addEventListener(
   saveState();
 }));
 
-// Sliders
 document.getElementById('bg-overlay-opacity').addEventListener('input', e => {
   bgConfig.opacity = e.target.value;
   document.getElementById('opacity-val').textContent = `${bgConfig.opacity}%`;
@@ -616,20 +816,20 @@ document.getElementById('bg-canvas-speed').addEventListener('input', e => {
 document.getElementById('btn-close-bg-modal').addEventListener('click', () => bgModal.classList.add('hidden'));
 document.getElementById('btn-close-bg-modal-2').addEventListener('click', () => bgModal.classList.add('hidden'));
 
-// 7. MODO TV (COM ANIMAÇÃO BOEING APENAS AO ATIVAR E A CADA 5 MINUTOS)
+// 7. MODO TV 
 let boeingInterval = null;
 
 function triggerBoeingAnimation() {
   if (!isTvMode) return;
   console.log('✈️ Disparando animação Boeing de colisão');
-  renderProjects(true); // renderiza com a classe 'boeing'
+  renderProjects(true);
 }
 
 function setTvMode(enable) {
   isTvMode = enable;
   document.body.classList.toggle('tv-mode', enable);
   document.getElementById('btn-exit-tv').classList.toggle('hidden', !enable);
-  document.getElementById('tv-datetime').classList.toggle('hidden', !enable);   // conjunto data/hora
+  document.getElementById('tv-datetime').classList.toggle('hidden', !enable);
 
   if (boeingInterval) {
     clearInterval(boeingInterval);
@@ -637,8 +837,8 @@ function setTvMode(enable) {
   }
 
   if (enable) {
-    document.documentElement.requestFullscreen().catch(() => {});
-    updateClock(); // atualiza imediatamente o relógio e o dia
+    document.documentElement.requestFullscreen().catch(() => { });
+    updateClock();
     triggerBoeingAnimation();
     boeingInterval = setInterval(triggerBoeingAnimation, 300000);
   } else {
@@ -650,12 +850,10 @@ function setTvMode(enable) {
 document.getElementById('btn-tv-mode').addEventListener('click', () => setTvMode(true));
 document.getElementById('btn-exit-tv').addEventListener('click', () => setTvMode(false));
 
-// Relógio com segundos e destaque do dia da semana
 function updateClock() {
   const now = new Date();
-  const dayOfWeek = now.getDay(); // 0 = Domingo, 6 = Sábado
+  const dayOfWeek = now.getDay();
 
-  // Atualiza o relógio
   const clockEl = document.getElementById('tv-clock');
   if (clockEl) {
     const hours = String(now.getHours()).padStart(2, '0');
@@ -664,7 +862,6 @@ function updateClock() {
     clockEl.textContent = `${hours}:${minutes}:${seconds}`;
   }
 
-  // Atualiza o destaque do dia da semana
   const weekdaysContainer = document.getElementById('tv-weekdays');
   if (weekdaysContainer) {
     const allDays = weekdaysContainer.querySelectorAll('span');
@@ -696,7 +893,7 @@ document.getElementById('btn-close-options-modal').addEventListener('click', () 
 document.getElementById('btn-export-data').addEventListener('click', () => {
   const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(projects, null, 2));
   const a = document.createElement('a');
-  a.href = dataStr; a.download = `kairos_backup_${new Date().toISOString().slice(0,10)}.json`;
+  a.href = dataStr; a.download = `kairos_backup_${new Date().toISOString().slice(0, 10)}.json`;
   a.click();
 });
 document.getElementById('btn-trigger-import').addEventListener('click', () => document.getElementById('import-file-input').click());
@@ -712,6 +909,40 @@ document.getElementById('import-file-input').addEventListener('change', e => {
   };
   reader.readAsText(file);
 });
+
+// NOVOS BOTÕES DE CONFIGURAÇÃO
+document.getElementById('btn-export-config').addEventListener('click', () => {
+  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ bgConfig }, null, 2));
+  const a = document.createElement('a');
+  a.href = dataStr;
+  a.download = `kairos_config.json`;
+  a.click();
+});
+document.getElementById('btn-import-config').addEventListener('click', () => {
+  document.getElementById('import-config-input').click();
+});
+document.getElementById('import-config-input').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const imported = JSON.parse(ev.target.result);
+      if (imported.bgConfig) {
+        bgConfig = imported.bgConfig;
+        saveState();
+        applyBackgroundConfig();
+        applyMusicConfig();
+        alert('Configurações importadas com sucesso!');
+        optionsModal.classList.add('hidden');
+      }
+    } catch {
+      alert('Ficheiro JSON inválido.');
+    }
+  };
+  reader.readAsText(file);
+});
+
 document.getElementById('btn-reset-defaults').addEventListener('click', () => {
   if (confirm('Restaurar projetos padrão?')) {
     projects = JSON.parse(JSON.stringify(INITIAL_PROJECTS));
@@ -729,7 +960,6 @@ document.querySelectorAll('.metric-chip').forEach(chip => chip.addEventListener(
 }));
 document.getElementById('search-input').addEventListener('input', e => { searchQuery = e.target.value; renderProjects(); });
 
-// Botão "Novo Projeto" dinâmico
 window.addEventListener('DOMContentLoaded', () => {
   const headerRight = document.querySelector('.header-right');
   if (headerRight && !document.getElementById('btn-add-project')) {
@@ -743,12 +973,40 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 // 10. INICIALIZAÇÃO
+function loadConfigFromFile() {
+  fetch('config.json')
+    .then(response => {
+      if (!response.ok) throw new Error('config.json não encontrado');
+      return response.json();
+    })
+    .then(data => {
+      if (data && data.bgConfig) {
+        console.log('📁 Configurações carregadas do ficheiro config.json');
+        bgConfig = data.bgConfig;
+        saveState();
+        applyBackgroundConfig();
+        applyMusicConfig();
+        renderProjects();
+      }
+    })
+    .catch(() => {
+      console.log('ℹ️ Nenhum ficheiro config.json encontrado, usando configurações padrão ou localStorage.');
+    });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   console.log('🚀 Dashboard iniciado');
   setTvMode(isTvMode);
   initCanvasElements();
   animateCanvas();
-  applyBackgroundConfig();
+
+  const hasStoredConfig = localStorage.getItem('kairos_bg_config');
+  if (!hasStoredConfig) {
+    loadConfigFromFile();
+  } else {
+    console.log('📦 Configurações carregadas do localStorage.');
+    applyBackgroundConfig();
+  }
 
   if (!document.getElementById('metrics-bar').innerHTML) {
     const filters = [
@@ -760,10 +1018,10 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
     const bar = document.getElementById('metrics-bar');
     bar.innerHTML = filters.map(f => `
-      <div class="metric-chip ${f.filter === 'all' ? 'active' : ''}" data-filter="${f.filter}">
-        ${f.label} <span class="chip-count" id="${f.id}">0</span>
-      </div>
-    `).join('');
+            <div class="metric-chip ${f.filter === 'all' ? 'active' : ''}" data-filter="${f.filter}">
+                ${f.label} <span class="chip-count" id="${f.id}">0</span>
+            </div>
+        `).join('');
     document.querySelectorAll('.metric-chip').forEach(chip => chip.addEventListener('click', e => {
       document.querySelectorAll('.metric-chip').forEach(c => c.classList.remove('active'));
       e.currentTarget.classList.add('active');
@@ -775,3 +1033,13 @@ document.addEventListener('DOMContentLoaded', () => {
   updateMetrics();
   console.log('✅ Pronto.');
 });
+
+// Desbloqueia o áudio na primeira interação do usuário
+document.body.addEventListener('click', function unlockAudio() {
+  userHasInteracted = true;
+  if (audioElement && audioElement.paused && !bgConfig.musicMuted && bgConfig.musicVolume > 0 && bgConfig.musicPlaylist && bgConfig.musicPlaylist.length > 0) {
+    if (bgConfig.musicPlaylist.some(item => item.url)) {
+      audioElement.play().catch(() => { });
+    }
+  }
+}, { once: true });
