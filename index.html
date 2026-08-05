@@ -4,116 +4,258 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
-    <title>Painel de Gestão - Kairós Motores</title>
-    
-    <!-- Google Fonts -->
+    <title>Painel de Gestão – Kairós Motores</title>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- Fundo de Mídia Dinâmica (Vídeos/Imagens) -->
-    <div id="mediaBgContainer"></div>
-    
-    <!-- Background Animado (Canvas) -->
-    <canvas id="bgCanvas"></canvas>
-    <div id="bgOverlay"></div>
+    <!-- Camadas de fundo -->
+    <canvas id="bg-canvas"></canvas>
+    <video id="bg-video" loop muted playsinline></video>
+    <img id="bg-image" alt="Fundo" />
+    <div id="bg-overlay"></div>
 
-    <div class="app-container" id="appContainer">
+    <div class="app-wrapper" id="app-wrapper">
         
-        <!-- Cabeçalho (Oculto no Modo TV) -->
-        <header class="top-bar">
-            <div class="logo-area">
-                <img src="LOGO PNG.png" alt="Kairós Motores" class="main-logo">
-            </div>
-            
-            <div class="controls-area">
-                <div class="slider-group">
-                    <label for="blurSlider">Desfoque Fundo:</label>
-                    <input type="range" id="blurSlider" min="0" max="20" value="2">
-                </div>
-                <div class="slider-group">
-                    <label for="opacitySlider">Escurecimento:</label>
-                    <input type="range" id="opacitySlider" min="0" max="1" step="0.1" value="0.3">
-                </div>
-                
-                <button class="btn btn-primary" id="btnAddProject">
-                    <i class="fa-solid fa-plus"></i> Novo Projeto
-                </button>
-                <div class="dropdown">
-                    <button class="btn btn-secondary">
-                        <i class="fa-solid fa-cog"></i>
-                    </button>
-                    <div class="dropdown-content">
-                        <a href="#" id="btnExport"><i class="fa-solid fa-download"></i> Exportar Backup (JSON)</a>
-                        <label for="importFile" class="import-label"><i class="fa-solid fa-upload"></i> Importar Backup</label>
-                        <input type="file" id="importFile" accept=".json" style="display: none;">
-                        <a href="#" id="btnTVMode"><i class="fa-solid fa-tv"></i> Modo Apresentação</a>
+        <header class="app-header admin-controls">
+            <div class="header-left">
+                <div class="brand-logo">
+                    <img src="LOGO PNG.png" alt="Kairós Motores" class="logo-symbol">
+                    <div class="brand-text">
+                        <span class="brand-name">Kairós</span>
+                        <span class="brand-sub">Motores</span>
                     </div>
                 </div>
             </div>
+
+            <div class="header-center">
+                <h1 class="header-title">PAINEL DE PROJETOS</h1>
+                <div class="header-line">
+                    <div class="line-wing"></div>
+                    <div class="line-dot"></div>
+                    <div class="line-wing right"></div>
+                </div>
+            </div>
+
+            <div class="header-right">
+                <button class="btn btn-secondary" id="btn-bg-settings">
+                    <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+                    Fundo
+                </button>
+                <button class="btn btn-accent" id="btn-tv-mode">
+                    <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg>
+                    Modo TV
+                </button>
+                <button class="btn btn-secondary" id="btn-more-options">
+                    <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                </button>
+            </div>
         </header>
 
-        <main>
-            <div class="section-title">
-                <h2>PROJETOS EM ANDAMENTO</h2>
-                <div class="search-bar">
-                    <i class="fa-solid fa-search"></i>
-                    <input type="text" id="searchInput" placeholder="Buscar projeto ou responsável...">
-                </div>
+        <section class="toolbar-section admin-controls">
+            <div class="metrics-bar" id="metrics-bar"></div>
+            <div class="search-box">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="search-input" placeholder="Buscar projeto ou responsável...">
             </div>
+        </section>
 
-            <div class="projects-grid" id="projectsGrid">
-                <!-- Cartões serão injetados aqui via JavaScript -->
-            </div>
-        </main>
+        <section class="projects-container">
+            <div class="projects-grid" id="projects-grid"></div>
+        </section>
+
+        <div id="tv-clock" class="tv-clock hidden"></div>
+        <button id="btn-exit-tv" class="btn-exit-tv hidden">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            Sair
+        </button>
     </div>
 
-    <!-- Modal Adicionar/Editar Projeto -->
-    <div class="modal-overlay" id="projectModal">
-        <div class="modal-content glass-panel">
-            <h2 id="modalTitle">Adicionar Projeto</h2>
-            <form id="projectForm">
-                <input type="hidden" id="projectId">
-                
+    <!-- Modal Projeto -->
+    <div class="modal-backdrop hidden" id="modal-project">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-project-title">Novo Projeto</h2>
+                <button class="btn-close-modal" id="btn-close-project-modal">&times;</button>
+            </div>
+            <form id="form-project">
+                <input type="hidden" id="project-id">
                 <div class="form-group">
-                    <label for="projName">Nome do Projeto</label>
-                    <input type="text" id="projName" required placeholder="Ex: API Faturamento">
+                    <label>Título</label>
+                    <input type="text" id="project-title-input" required placeholder="Nome do projeto">
                 </div>
-                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Responsáveis</label>
+                        <input type="text" id="project-responsibles-input" required placeholder="Ex: Douglas e Pedro">
+                    </div>
+                    <div class="form-group">
+                        <label>Ícone</label>
+                        <select id="project-icon-input">
+                            <option value="api">API</option>
+                            <option value="cart">E-Commerce</option>
+                            <option value="clipboard">Peritagem</option>
+                            <option value="report">Relatório</option>
+                            <option value="shield">Qualidade</option>
+                            <option value="chart">Capacidade</option>
+                            <option value="idcard">Placas</option>
+                            <option value="globe">Financeiro</option>
+                            <option value="train">Ferrovia</option>
+                            <option value="building">Unidade</option>
+                            <option value="gear">Geral</option>
+                            <option value="box">Pacote</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="project-status-input">
+                            <option value="Em andamento">Em andamento</option>
+                            <option value="Em análise">Em análise</option>
+                            <option value="Parado">Parado</option>
+                            <option value="Concluído">Concluído</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Progresso (%)</label>
+                        <input type="number" id="project-progress-input" min="0" max="100" value="50">
+                    </div>
+                </div>
                 <div class="form-group">
-                    <label for="projAssignees">Responsáveis</label>
-                    <input type="text" id="projAssignees" required placeholder="Ex: Douglas e Pedro">
+                    <label>Descrição</label>
+                    <textarea id="project-description-input" rows="2" placeholder="Breve descrição..."></textarea>
                 </div>
-                
-                <div class="form-group">
-                    <label for="projIcon">Ícone (FontAwesome class)</label>
-                    <input type="text" id="projIcon" value="fa-solid fa-laptop-code" placeholder="Ex: fa-solid fa-chart-line">
-                    <small>Consulte <a href="https://fontawesome.com/icons" target="_blank" style="color:var(--text-muted)">FontAwesome</a></small>
-                </div>
-                
-                <div class="form-group">
-                    <label for="projStatus">Status</label>
-                    <select id="projStatus">
-                        <option value="Em andamento">Em andamento</option>
-                        <option value="Em análise">Em análise</option>
-                        <option value="Parado">Parado</option>
-                        <option value="Concluído">Concluído</option>
-                    </select>
-                </div>
-                
-                <div class="modal-actions">
-                    <button type="button" class="btn btn-secondary" id="btnCancelModal">Cancelar</button>
-                    <button type="button" class="btn btn-danger" id="btnDeleteProject" style="display: none;">Excluir</button>
-                    <button type="submit" class="btn btn-primary">Salvar</button>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger hidden" id="btn-delete-project">Excluir</button>
+                    <div class="footer-actions">
+                        <button type="button" class="btn btn-secondary" id="btn-cancel-project">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Salvar</button>
+                    </div>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Modal Fundo -->
+    <div class="modal-backdrop hidden" id="modal-bg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Personalizar Fundo</h2>
+                <button class="btn-close-modal" id="btn-close-bg-modal">&times;</button>
+            </div>
+            <div class="form-group">
+                <label>Tipo de fundo</label>
+                <div class="bg-type-selector">
+                    <button class="bg-type-btn active" data-type="canvas">Canvas Tech</button>
+                    <button class="bg-type-btn" data-type="video">Vídeo</button>
+                    <button class="bg-type-btn" data-type="gif">GIF / Imagem</button>
+                    <button class="bg-type-btn" data-type="local">Arquivos locais</button>
+                </div>
+            </div>
+            <div id="bg-canvas-options">
+                <div class="form-group">
+                    <label>Velocidade</label>
+                    <input type="range" id="bg-canvas-speed" min="0.5" max="5" step="0.5" value="2">
+                </div>
+            </div>
+            <div id="bg-video-options" class="hidden">
+                <div class="form-group">
+                    <label>URL do vídeo (único)</label>
+                    <div class="input-with-btn">
+                        <input type="text" id="bg-video-url" placeholder="https://...">
+                        <button type="button" class="btn btn-secondary btn-apply-bg" data-target="video">Aplicar</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Ou enviar arquivo</label>
+                    <input type="file" id="bg-video-file" accept="video/*">
+                </div>
+                <div class="preset-suggestions">
+                    <span>Sugestões:</span>
+                    <span class="preset-link" data-url="https://assets.mixkit.co/videos/preview/mixkit-circuit-board-loop-animation-43098-large.mp4">Circuito</span>
+                    <span class="preset-link" data-url="https://assets.mixkit.co/videos/preview/mixkit-digital-animation-of-a-city-41017-large.mp4">Cidade</span>
+                </div>
+
+                <!-- Playlist de vídeos -->
+                <div id="bg-playlist-section">
+                    <hr class="divider">
+                    <div class="form-group">
+                        <label>Playlist de vídeos (com rotação automática)</label>
+                        <div id="playlist-container"></div>
+                        <button type="button" class="btn btn-secondary" id="btn-add-playlist-item" style="margin-top: 8px;">
+                            <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            Adicionar vídeo
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div id="bg-gif-options" class="hidden">
+                <div class="form-group">
+                    <label>URL da imagem/GIF</label>
+                    <div class="input-with-btn">
+                        <input type="text" id="bg-gif-url" placeholder="https://...">
+                        <button type="button" class="btn btn-secondary btn-apply-bg" data-target="gif">Aplicar</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Ou enviar arquivo</label>
+                    <input type="file" id="bg-gif-file" accept="image/*">
+                </div>
+            </div>
+            <div id="bg-local-options" class="hidden">
+                <div class="form-group">
+                    <label>Escolha um arquivo local</label>
+                    <div id="local-bg-list" class="local-bg-list"></div>
+                </div>
+            </div>
+            <hr class="divider">
+            <div class="form-group">
+                <label>Opacidade do overlay (<span id="opacity-val">10%</span>)</label>
+                <input type="range" id="bg-overlay-opacity" min="10" max="95" value="10">
+            </div>
+            <div class="form-group">
+                <label>Desfoque (<span id="blur-val">0px</span>)</label>
+                <input type="range" id="bg-blur-amount" min="0" max="10" value="0">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="btn-close-bg-modal-2">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Opções -->
+    <div class="modal-backdrop hidden" id="modal-options">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Mais Opções</h2>
+                <button class="btn-close-modal" id="btn-close-options-modal">&times;</button>
+            </div>
+            <div class="form-group">
+                <label>Link para Modo TV</label>
+                <div class="copy-link-box">
+                    <input type="text" id="tv-share-url" readonly>
+                    <button class="btn btn-secondary" id="btn-copy-tv-url">Copiar</button>
+                </div>
+            </div>
+            <hr class="divider">
+            <button class="btn btn-secondary" id="btn-export-data" style="width:100%;margin-bottom:10px;">
+                <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Exportar Backup JSON
+            </button>
+            <button class="btn btn-secondary" id="btn-trigger-import" style="width:100%;margin-bottom:10px;">
+                <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Importar Backup JSON
+            </button>
+            <input type="file" id="import-file-input" accept=".json" style="display:none;">
+            <button class="btn btn-danger" id="btn-reset-defaults" style="width:100%;">
+                Restaurar Projetos Padrão
+            </button>
         </div>
     </div>
 
