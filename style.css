@@ -1,5 +1,5 @@
 /* ==========================================================================
-   KAIRÓS MOTORES – DESIGN SYSTEM FINAL (COM HOVER DE DESCRIÇÃO)
+   KAIRÓS MOTORES – DESIGN SYSTEM FINAL (DIAS EM BOLINHAS HORIZONTAIS)
    ========================================================================== */
 :root {
   --bg-dark: #090c10;
@@ -185,11 +185,62 @@ html, body { width:100%; min-height:100vh; background:var(--bg-dark); color:var(
   transform: translateY(0);
 }
 
-/* Relógio TV */
+/* Relógio + Dias da semana (bolinhas horizontais) */
+.tv-datetime {
+  position: fixed;
+  top: 24px;
+  right: 32px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  z-index: 5;                /* atrás dos cartões (z-index 10) */
+}
+.tv-weekdays {
+  display: flex;
+  flex-direction: row;       /* horizontal */
+  gap: 10px;
+  align-items: center;
+}
+.tv-weekdays span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.4);
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  border: 1px solid rgba(255,255,255,0.15);
+  text-shadow: 0 0 5px rgba(255,255,255,0.2);
+  transition: all 0.3s ease;
+}
+.tv-weekdays span.active {
+  background: rgba(239,68,68,0.25);
+  color: #fff;
+  border-color: #ef4444;
+  text-shadow: 0 0 10px #ef4444, 0 0 20px #ef4444;
+  box-shadow: 0 0 15px rgba(239,68,68,0.5);
+  animation: neonPulse 2s infinite alternate;
+}
 .tv-clock {
-  position:fixed; top:24px; right:32px; font-family:var(--font-heading);
-  font-size:3rem; font-weight:700; color:#fff; text-shadow:0 0 20px rgba(239,68,68,0.5);
-  z-index:50;
+  font-family: var(--font-heading);
+  font-size: 4rem;
+  font-weight: 700;
+  color: #fff;
+  text-shadow:
+    0 0 10px #ef4444,
+    0 0 20px #ef4444,
+    0 0 40px #ef4444,
+    0 0 80px #ef4444;
+  animation: neonPulse 2s infinite alternate;
+}
+
+@keyframes neonPulse {
+  from { text-shadow: 0 0 10px #ef4444, 0 0 20px #ef4444, 0 0 40px #ef4444, 0 0 80px #ef4444; }
+  to   { text-shadow: 0 0 5px #ef4444, 0 0 10px #ef4444, 0 0 20px #ef4444, 0 0 40px #ef4444; }
 }
 
 /* Botão sair do modo TV */
@@ -203,6 +254,28 @@ html, body { width:100%; min-height:100vh; background:var(--bg-dark); color:var(
 .btn-exit-tv:hover { transform:scale(1.05); border-color:var(--color-red); }
 
 .hidden { display:none !important; }
+
+/* Modo TV: esconde os botões do cabeçalho e barra de ferramentas */
+body.tv-mode .admin-controls {
+  display: none !important;
+}
+/* Apenas o botão Sair é mostrado */
+body.tv-mode .btn-exit-tv {
+  display: inline-flex !important;
+}
+
+/* Centralizar os cartões verticalmente no modo TV */
+body.tv-mode .app-wrapper {
+  justify-content: center;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+body.tv-mode .projects-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
 /* Modais */
 .modal-backdrop {
@@ -287,6 +360,37 @@ html, body { width:100%; min-height:100vh; background:var(--bg-dark); color:var(
 @keyframes cardIn {
   from { opacity:0; transform:translateY(30px); }
   to { opacity:1; transform:translateY(0); }
+}
+
+/* Animação Boeing (usada apenas no modo TV) */
+@keyframes boeingCollision {
+  0% {
+    transform: translateX(-120%) scale(0.85);
+    opacity: 0;
+  }
+  65% {
+    transform: translateX(12%) scale(1.06);
+    opacity: 1;
+  }
+  80% {
+    transform: translateX(-4%) scale(0.97);
+  }
+  100% {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+}
+.project-card.boeing {
+  animation: boeingCollision 1.1s cubic-bezier(0.25, 0.1, 0.1, 1.0) both !important;
+  transform-origin: center center;
+}
+@keyframes shakeAfterLanding {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-3px); }
+  20%, 40%, 60%, 80% { transform: translateX(3px); }
+}
+.project-card.shake {
+  animation: shakeAfterLanding 0.3s ease;
 }
 
 /* Responsivo */

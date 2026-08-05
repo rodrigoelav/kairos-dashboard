@@ -1,5 +1,5 @@
 /* ==========================================================================
-   KAIRÓS MOTORES – DASHBOARD FINAL (ANIMAÇÃO BOEING SÓ NO MODO TV)
+   KAIRÓS MOTORES – DASHBOARD FINAL (PLAYLIST + ANIMAÇÃO BOEING + DIAS DA SEMANA)
    ========================================================================== */
 
 // ===== DIAGNÓSTICO INICIAL =====
@@ -71,7 +71,7 @@ function saveState() {
   localStorage.setItem('kairos_bg_config', JSON.stringify(bgConfig));
 }
 
-// 3. ÍCONES SVG (mantido)
+// 3. ÍCONES SVG
 function getIconSvg(iconName) {
   const icons = {
     api: `<svg class="card-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>`,
@@ -629,9 +629,8 @@ function setTvMode(enable) {
   isTvMode = enable;
   document.body.classList.toggle('tv-mode', enable);
   document.getElementById('btn-exit-tv').classList.toggle('hidden', !enable);
-  document.getElementById('tv-clock').classList.toggle('hidden', !enable);
+  document.getElementById('tv-datetime').classList.toggle('hidden', !enable);   // conjunto data/hora
 
-  // Limpa intervalos anteriores
   if (boeingInterval) {
     clearInterval(boeingInterval);
     boeingInterval = null;
@@ -639,14 +638,11 @@ function setTvMode(enable) {
 
   if (enable) {
     document.documentElement.requestFullscreen().catch(() => {});
-    updateClock();
-    // Dispara a animação imediatamente ao entrar no modo TV
+    updateClock(); // atualiza imediatamente o relógio e o dia
     triggerBoeingAnimation();
-    // Agenda a animação a cada 5 minutos (300000 ms)
     boeingInterval = setInterval(triggerBoeingAnimation, 300000);
   } else {
     if (document.fullscreenElement) document.exitFullscreen();
-    // Re-renderiza sem animação ao sair do modo TV
     renderProjects(false);
   }
 }
@@ -654,9 +650,33 @@ function setTvMode(enable) {
 document.getElementById('btn-tv-mode').addEventListener('click', () => setTvMode(true));
 document.getElementById('btn-exit-tv').addEventListener('click', () => setTvMode(false));
 
+// Relógio com segundos e destaque do dia da semana
 function updateClock() {
-  const el = document.getElementById('tv-clock');
-  if (el) el.textContent = new Date().toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
+  const now = new Date();
+  const dayOfWeek = now.getDay(); // 0 = Domingo, 6 = Sábado
+
+  // Atualiza o relógio
+  const clockEl = document.getElementById('tv-clock');
+  if (clockEl) {
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    clockEl.textContent = `${hours}:${minutes}:${seconds}`;
+  }
+
+  // Atualiza o destaque do dia da semana
+  const weekdaysContainer = document.getElementById('tv-weekdays');
+  if (weekdaysContainer) {
+    const allDays = weekdaysContainer.querySelectorAll('span');
+    allDays.forEach(span => {
+      const day = parseInt(span.getAttribute('data-day'), 10);
+      if (day === dayOfWeek) {
+        span.classList.add('active');
+      } else {
+        span.classList.remove('active');
+      }
+    });
+  }
 }
 setInterval(updateClock, 1000);
 
