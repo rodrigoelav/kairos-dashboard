@@ -1,5 +1,5 @@
 /* ==========================================================================
-   KAIRÓS MOTORES – DESIGN SYSTEM FINAL (COMPATÍVEL COM TV)
+   KAIRÓS MOTORES – DESIGN SYSTEM FINAL (COMPATÍVEL COM LG webOS)
    ========================================================================== */
 :root {
   --bg-dark: #090c10;
@@ -76,7 +76,7 @@ html, body { width:100%; min-height:100vh; background:var(--bg-dark); color:var(
 .icon-svg { width:18px; height:18px; }
 .btn-primary { background:linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color:#fff; box-shadow:0 4px 14px rgba(220,38,38,0.35); }
 .btn-primary:hover { background:linear-gradient(135deg, #ef4444 0%, #dc2626 100%); transform:translateY(-1px); box-shadow:0 6px 20px rgba(239,68,68,0.5); }
-.btn-secondary { background:rgba(255,255,255,0.06); color:#e5e7eb; border-color:rgba(255,255,255,0.12); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); }
+.btn-secondary { background:rgba(255,255,255,0.06); color:#e5e7eb; border-color:rgba(255,255,255,0.12); }
 .btn-secondary:hover { background:rgba(255,255,255,0.12); border-color:rgba(255,255,255,0.25); transform:translateY(-1px); }
 .btn-accent { background:rgba(59,130,246,0.15); color:#60a5fa; border-color:rgba(59,130,246,0.3); }
 .btn-accent:hover { background:rgba(59,130,246,0.25); border-color:rgba(59,130,246,0.5); transform:translateY(-1px); }
@@ -112,7 +112,7 @@ html, body { width:100%; min-height:100vh; background:var(--bg-dark); color:var(
 /* Grid de cartões */
 .projects-grid {
   display:grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap:22px;
 }
 .project-card {
@@ -120,7 +120,6 @@ html, body { width:100%; min-height:100vh; background:var(--bg-dark); color:var(
   border-radius:18px; padding:18px 20px;
   display:grid; grid-template-columns:auto 1fr; grid-template-rows:auto auto;
   column-gap:16px; row-gap:4px; align-items:center;
-  backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
   box-shadow:0 8px 32px rgba(0,0,0,0.35); transition:all var(--transition-smooth);
   cursor:pointer; overflow:hidden;
   animation: cardIn 0.4s ease both;
@@ -249,10 +248,9 @@ html, body { width:100%; min-height:100vh; background:var(--bg-dark); color:var(
 
 /* Botão sair do modo TV */
 .btn-exit-tv {
-  position:fixed; bottom:24px; right:24px; z-index:100;
+  position:fixed; bottom:24px; right:24px; z-index:9999;
   display:inline-flex; align-items:center; gap:8px; padding:10px 20px; border-radius:30px;
   background:rgba(9,12,16,0.85); color:#fff; border:1px solid rgba(255,255,255,0.2);
-  backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
   cursor:pointer; box-shadow:0 8px 24px rgba(0,0,0,0.5);
   transition:transform var(--transition-fast);
 }
@@ -281,11 +279,24 @@ body.tv-mode .projects-container {
   justify-content: center;
 }
 
+/* Forçar 3 colunas no Modo TV */
+body.tv-mode .projects-grid {
+  grid-template-columns: repeat(3, 1fr) !important;
+  max-width: 1300px;
+  margin: 0 auto;
+}
+
+/* Remover backdrop-filter no Modo TV (compatível com webOS) */
+body.tv-mode .btn,
+body.tv-mode .modal-backdrop {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
 /* Modais */
 .modal-backdrop {
   position:fixed; top:0; left:0; width:100vw; height:100vh;
-  background:rgba(0,0,0,0.75); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
-  z-index:1000;
+  background:rgba(0,0,0,0.75); z-index:1000;
   display:flex; align-items:center; justify-content:center; padding:20px;
   opacity:0; pointer-events:none; transition:opacity 0.25s ease;
 }
@@ -345,39 +356,16 @@ body.tv-mode .projects-container {
 .input-with-btn input { flex:1; }
 
 /* Playlist */
-#bg-playlist-section {
-  margin-top: 8px;
-}
-.playlist-row {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  margin-bottom: 8px;
-}
-.playlist-row input[type="text"] {
-  flex: 2;
-}
-.playlist-row input[type="number"] {
-  width: 70px;
-}
+#bg-playlist-section { margin-top: 8px; }
+.playlist-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+.playlist-row input[type="text"] { flex: 2; }
+.playlist-row input[type="number"] { width: 70px; }
 
 /* Música de Fundo */
-#music-playlist-container .playlist-row {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  margin-bottom: 8px;
-}
-#music-playlist-container .playlist-row input[type="text"] {
-  flex: 2;
-}
-#music-playlist-container .playlist-row input[type="number"] {
-  width: 70px;
-}
-#btn-toggle-mute {
-  padding: 6px 12px;
-  font-size: 0.85rem;
-}
+#music-playlist-container .playlist-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+#music-playlist-container .playlist-row input[type="text"] { flex: 2; }
+#music-playlist-container .playlist-row input[type="number"] { width: 70px; }
+#btn-toggle-mute { padding: 6px 12px; font-size: 0.85rem; }
 
 /* Animações padrão */
 @keyframes cardIn {
@@ -387,21 +375,10 @@ body.tv-mode .projects-container {
 
 /* Animação Boeing (usada apenas no modo TV) */
 @keyframes boeingCollision {
-  0% {
-    transform: translateX(-120%) scale(0.85);
-    opacity: 0;
-  }
-  65% {
-    transform: translateX(12%) scale(1.06);
-    opacity: 1;
-  }
-  80% {
-    transform: translateX(-4%) scale(0.97);
-  }
-  100% {
-    transform: translateX(0) scale(1);
-    opacity: 1;
-  }
+  0% { transform: translateX(-120%) scale(0.85); opacity: 0; }
+  65% { transform: translateX(12%) scale(1.06); opacity: 1; }
+  80% { transform: translateX(-4%) scale(0.97); }
+  100% { transform: translateX(0) scale(1); opacity: 1; }
 }
 .project-card.boeing {
   animation: boeingCollision 1.1s cubic-bezier(0.25, 0.1, 0.1, 1.0) both !important;
@@ -412,9 +389,7 @@ body.tv-mode .projects-container {
   10%, 30%, 50%, 70%, 90% { transform: translateX(-3px); }
   20%, 40%, 60%, 80% { transform: translateX(3px); }
 }
-.project-card.shake {
-  animation: shakeAfterLanding 0.3s ease;
-}
+.project-card.shake { animation: shakeAfterLanding 0.3s ease; }
 
 /* Responsivo */
 @media (max-width:1100px) { .projects-grid { grid-template-columns:repeat(2,1fr); } }

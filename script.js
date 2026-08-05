@@ -1,5 +1,5 @@
 /* ==========================================================================
-   KAIRÓS MOTORES – DASHBOARD FINAL (TV COMPATÍVEL + CONFIG.JSON)
+   KAIRÓS MOTORES – DASHBOARD FINAL (LG webOS COMPATÍVEL)
    ========================================================================== */
 
 // ===== DIAGNÓSTICO INICIAL =====
@@ -26,6 +26,18 @@
     }
   });
 })();
+
+// ===== FUNÇÃO AUXILIAR PARA CLIQUES EM TVS (webOS) =====
+function addSafeClick(element, handler) {
+  if (!element) return;
+  element.style.cursor = 'pointer';
+  element.addEventListener('click', handler);
+  element.addEventListener('pointerdown', handler);
+  element.addEventListener('touchend', function(e) {
+    e.preventDefault();
+    handler(e);
+  });
+}
 
 // 1. DADOS INICIAIS
 const INITIAL_PROJECTS = [
@@ -254,7 +266,7 @@ formProject.addEventListener('submit', (e) => {
   renderProjects();
 });
 
-document.getElementById('btn-delete-project').addEventListener('click', () => {
+addSafeClick(document.getElementById('btn-delete-project'), () => {
   const id = document.getElementById('project-id').value;
   if (id && confirm('Tem certeza que deseja excluir este projeto?')) {
     projects = projects.filter(p => p.id !== id);
@@ -262,8 +274,8 @@ document.getElementById('btn-delete-project').addEventListener('click', () => {
     renderProjects();
   }
 });
-document.getElementById('btn-close-project-modal').addEventListener('click', () => projectModal.classList.add('hidden'));
-document.getElementById('btn-cancel-project').addEventListener('click', () => projectModal.classList.add('hidden'));
+addSafeClick(document.getElementById('btn-close-project-modal'), () => projectModal.classList.add('hidden'));
+addSafeClick(document.getElementById('btn-cancel-project'), () => projectModal.classList.add('hidden'));
 
 // 6. FUNDO DINÂMICO
 const bgCanvas = document.getElementById('bg-canvas');
@@ -452,7 +464,7 @@ window.addEventListener('resize', initCanvasElements);
 
 // Modal Background
 const bgModal = document.getElementById('modal-bg');
-document.getElementById('btn-bg-settings').addEventListener('click', () => {
+addSafeClick(document.getElementById('btn-bg-settings'), () => {
   console.log('🖌️ Abrindo modal de fundo');
   bgModal.classList.remove('hidden');
   document.getElementById('bg-overlay-opacity').value = bgConfig.opacity;
@@ -544,10 +556,10 @@ function addPlaylistItem() {
   renderPlaylistItems();
 }
 
-document.getElementById('btn-add-playlist-item')?.addEventListener('click', addPlaylistItem);
+addSafeClick(document.getElementById('btn-add-playlist-item'), addPlaylistItem);
 
 
-// --- MÚSICA DE FUNDO (CORRIGIDA) ---
+// --- MÚSICA DE FUNDO ---
 let audioElement = null;
 let musicTimer = null;
 let userHasInteracted = false;
@@ -685,7 +697,7 @@ function renderMusicPlaylistItems() {
   });
 }
 
-document.getElementById('btn-add-music-item').addEventListener('click', () => {
+addSafeClick(document.getElementById('btn-add-music-item'), () => {
   if (!bgConfig.musicPlaylist) bgConfig.musicPlaylist = [];
   bgConfig.musicPlaylist.push({ url: '', duration: 2 });
   saveState();
@@ -698,7 +710,7 @@ document.getElementById('music-volume').addEventListener('input', e => {
   updateMusicVolume();
 });
 
-document.getElementById('btn-toggle-mute').addEventListener('click', () => {
+addSafeClick(document.getElementById('btn-toggle-mute'), () => {
   bgConfig.musicMuted = !bgConfig.musicMuted;
   saveState();
   const icon = document.getElementById('mute-icon');
@@ -813,8 +825,8 @@ document.getElementById('bg-canvas-speed').addEventListener('input', e => {
   saveState();
 });
 
-document.getElementById('btn-close-bg-modal').addEventListener('click', () => bgModal.classList.add('hidden'));
-document.getElementById('btn-close-bg-modal-2').addEventListener('click', () => bgModal.classList.add('hidden'));
+addSafeClick(document.getElementById('btn-close-bg-modal'), () => bgModal.classList.add('hidden'));
+addSafeClick(document.getElementById('btn-close-bg-modal-2'), () => bgModal.classList.add('hidden'));
 
 // 7. MODO TV 
 let boeingInterval = null;
@@ -847,8 +859,8 @@ function setTvMode(enable) {
   }
 }
 
-document.getElementById('btn-tv-mode').addEventListener('click', () => setTvMode(true));
-document.getElementById('btn-exit-tv').addEventListener('click', () => setTvMode(false));
+addSafeClick(document.getElementById('btn-tv-mode'), () => setTvMode(true));
+addSafeClick(document.getElementById('btn-exit-tv'), () => setTvMode(false));
 
 function updateClock() {
   const now = new Date();
@@ -879,24 +891,24 @@ setInterval(updateClock, 1000);
 
 // 8. OPÇÕES EXTRA
 const optionsModal = document.getElementById('modal-options');
-document.getElementById('btn-more-options').addEventListener('click', () => {
+addSafeClick(document.getElementById('btn-more-options'), () => {
   optionsModal.classList.remove('hidden');
   document.getElementById('tv-share-url').value = `${window.location.origin}${window.location.pathname}?mode=tv`;
 });
-document.getElementById('btn-copy-tv-url').addEventListener('click', () => {
+addSafeClick(document.getElementById('btn-copy-tv-url'), () => {
   const input = document.getElementById('tv-share-url');
   input.select();
   navigator.clipboard.writeText(input.value);
   alert('Link copiado!');
 });
-document.getElementById('btn-close-options-modal').addEventListener('click', () => optionsModal.classList.add('hidden'));
-document.getElementById('btn-export-data').addEventListener('click', () => {
+addSafeClick(document.getElementById('btn-close-options-modal'), () => optionsModal.classList.add('hidden'));
+addSafeClick(document.getElementById('btn-export-data'), () => {
   const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(projects, null, 2));
   const a = document.createElement('a');
   a.href = dataStr; a.download = `kairos_backup_${new Date().toISOString().slice(0, 10)}.json`;
   a.click();
 });
-document.getElementById('btn-trigger-import').addEventListener('click', () => document.getElementById('import-file-input').click());
+addSafeClick(document.getElementById('btn-trigger-import'), () => document.getElementById('import-file-input').click());
 document.getElementById('import-file-input').addEventListener('change', e => {
   const file = e.target.files[0];
   if (!file) return;
@@ -911,14 +923,16 @@ document.getElementById('import-file-input').addEventListener('change', e => {
 });
 
 // NOVOS BOTÕES DE CONFIGURAÇÃO
-document.getElementById('btn-export-config').addEventListener('click', () => {
+addSafeClick(document.getElementById('btn-export-config'), () => {
   const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ bgConfig }, null, 2));
   const a = document.createElement('a');
   a.href = dataStr;
   a.download = `kairos_config.json`;
+  document.body.appendChild(a);
   a.click();
+  document.body.removeChild(a);
 });
-document.getElementById('btn-import-config').addEventListener('click', () => {
+addSafeClick(document.getElementById('btn-import-config'), () => {
   document.getElementById('import-config-input').click();
 });
 document.getElementById('import-config-input').addEventListener('change', e => {
@@ -943,7 +957,7 @@ document.getElementById('import-config-input').addEventListener('change', e => {
   reader.readAsText(file);
 });
 
-document.getElementById('btn-reset-defaults').addEventListener('click', () => {
+addSafeClick(document.getElementById('btn-reset-defaults'), () => {
   if (confirm('Restaurar projetos padrão?')) {
     projects = JSON.parse(JSON.stringify(INITIAL_PROJECTS));
     renderProjects();
@@ -968,7 +982,7 @@ window.addEventListener('DOMContentLoaded', () => {
     btnAdd.className = 'btn btn-primary';
     btnAdd.innerHTML = `<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Novo`;
     headerRight.appendChild(btnAdd);
-    btnAdd.addEventListener('click', openAddModal);
+    addSafeClick(btnAdd, openAddModal);
   }
 });
 
