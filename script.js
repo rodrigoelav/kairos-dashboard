@@ -1,5 +1,5 @@
 /* ==========================================================================
-   KAIRÓS MOTORES – DASHBOARD FINAL (PLAYLIST DE VÍDEOS + ANIMAÇÃO BOEING)
+   KAIRÓS MOTORES – DASHBOARD FINAL (ANIMAÇÃO BOEING SÓ NO MODO TV)
    ========================================================================== */
 
 // ===== DIAGNÓSTICO INICIAL =====
@@ -103,7 +103,7 @@ const NEXT_STATUS = {
   'Concluído': 'Em andamento'
 };
 
-// 4. RENDERIZAÇÃO (com suporte à animação Boeing)
+// 4. RENDERIZAÇÃO (com suporte à animação Boeing apenas no modo TV)
 function renderProjects(animateBoeing = false) {
   const grid = document.getElementById('projects-grid');
   grid.innerHTML = '';
@@ -139,6 +139,7 @@ function renderProjects(animateBoeing = false) {
       <div class="progress-bar">
         <div class="progress-fill" style="width: ${project.progress || 0}%"></div>
       </div>
+      <div class="card-description">${escapeHtml(project.description)}</div>
       <button class="card-edit-btn" title="Editar">
         <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
       </button>
@@ -615,13 +616,13 @@ document.getElementById('bg-canvas-speed').addEventListener('input', e => {
 document.getElementById('btn-close-bg-modal').addEventListener('click', () => bgModal.classList.add('hidden'));
 document.getElementById('btn-close-bg-modal-2').addEventListener('click', () => bgModal.classList.add('hidden'));
 
-// 7. MODO TV (com animação Boeing)
+// 7. MODO TV (COM ANIMAÇÃO BOEING APENAS AO ATIVAR E A CADA 5 MINUTOS)
 let boeingInterval = null;
 
 function triggerBoeingAnimation() {
   if (!isTvMode) return;
   console.log('✈️ Disparando animação Boeing de colisão');
-  renderProjects(true);
+  renderProjects(true); // renderiza com a classe 'boeing'
 }
 
 function setTvMode(enable) {
@@ -630,6 +631,7 @@ function setTvMode(enable) {
   document.getElementById('btn-exit-tv').classList.toggle('hidden', !enable);
   document.getElementById('tv-clock').classList.toggle('hidden', !enable);
 
+  // Limpa intervalos anteriores
   if (boeingInterval) {
     clearInterval(boeingInterval);
     boeingInterval = null;
@@ -638,23 +640,15 @@ function setTvMode(enable) {
   if (enable) {
     document.documentElement.requestFullscreen().catch(() => {});
     updateClock();
-    window.tvInterval = setInterval(rotateTvFilter, 30000);
+    // Dispara a animação imediatamente ao entrar no modo TV
     triggerBoeingAnimation();
+    // Agenda a animação a cada 5 minutos (300000 ms)
     boeingInterval = setInterval(triggerBoeingAnimation, 300000);
   } else {
     if (document.fullscreenElement) document.exitFullscreen();
-    clearInterval(window.tvInterval);
+    // Re-renderiza sem animação ao sair do modo TV
     renderProjects(false);
   }
-}
-
-function rotateTvFilter() {
-  const filters = ['all', 'Em andamento', 'Em análise', 'Parado', 'Concluído'];
-  const current = filters.indexOf(activeFilter);
-  activeFilter = filters[(current + 1) % filters.length];
-  document.querySelectorAll('.metric-chip').forEach(c => c.classList.remove('active'));
-  document.querySelector(`.metric-chip[data-filter="${activeFilter}"]`)?.classList.add('active');
-  renderProjects(false);
 }
 
 document.getElementById('btn-tv-mode').addEventListener('click', () => setTvMode(true));
@@ -665,12 +659,6 @@ function updateClock() {
   if (el) el.textContent = new Date().toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
 }
 setInterval(updateClock, 1000);
-
-setInterval(() => {
-  if (!isTvMode) return;
-  projects.forEach(p => { if (p.status === 'Em andamento' && p.progress < 99) p.progress = Math.min(99, p.progress + Math.floor(Math.random() * 3)); });
-  renderProjects(false);
-}, 5000);
 
 // 8. OPÇÕES EXTRA
 const optionsModal = document.getElementById('modal-options');
@@ -712,7 +700,7 @@ document.getElementById('btn-reset-defaults').addEventListener('click', () => {
   }
 });
 
-// 9. FILTROS E BUSCA
+// 9. FILTROS E BUSCA (MANUAIS)
 document.querySelectorAll('.metric-chip').forEach(chip => chip.addEventListener('click', e => {
   document.querySelectorAll('.metric-chip').forEach(c => c.classList.remove('active'));
   e.currentTarget.classList.add('active');
